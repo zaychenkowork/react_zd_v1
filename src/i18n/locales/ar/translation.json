@@ -35,7 +35,11 @@
   "home": {
     "title": "react-zd-v1",
     "subtitle": "قالب React — Vite وTanStack Query وZustand وi18next.",
-    "profileSectionTitle": "كتلة تجريبية: UserProfileCard"
+    "profileSectionTitle": "كتلة تجريبية: UserProfileCard",
+    "openModalSectionTitle": "عرض تجريبي: ModalCore",
+    "openModal": "فتح النافذة المنبثقة",
+    "demoModalTitle": "مثال على نافذة منبثقة",
+    "demoModalDescription": "هذه النافذة يديرها المكوّن الأب — حالة isOpen محفوظة في Home وتُمرَّر كخصائص."
   },
   "notFound": {
     "title": "404",

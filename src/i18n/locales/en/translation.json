@@ -35,7 +35,11 @@
   "home": {
     "title": "react-zd-v1",
     "subtitle": "A React template — Vite, TanStack Query, Zustand, i18next.",
-    "profileSectionTitle": "Demo block: UserProfileCard"
+    "profileSectionTitle": "Demo block: UserProfileCard",
+    "openModalSectionTitle": "Demo: ModalCore",
+    "openModal": "Open modal",
+    "demoModalTitle": "Example modal",
+    "demoModalDescription": "This modal is parent-owned — the Home page holds the isOpen state and passes it down as props."
   },
   "notFound": {
     "title": "404",

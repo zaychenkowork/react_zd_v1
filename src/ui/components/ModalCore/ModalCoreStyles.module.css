@@ -1,0 +1,61 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  /* No overlay-tint token yet (phase 3 is intentionally minimal) — a plain
+     black scrim reads correctly on both themes. */
+  background-color: rgb(0 0 0 / 40%);
+  display: grid;
+  place-items: center;
+  z-index: 20;
+  padding: 20px;
+}
+
+.content {
+  position: relative;
+  background: var(--color-primary-0);
+  color: var(--color-primary-950);
+  padding: 24px;
+  border: 1px solid var(--color-grey-200);
+  border-radius: 20px;
+  min-width: 280px;
+  max-width: 500px;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+.title {
+  padding-right: 30px;
+}
+
+.description {
+  color: var(--color-grey-600);
+  margin-top: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.closeButton {
+  all: unset;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-grey-600);
+}
+
+.closeButton:hover {
+  background-color: var(--color-grey-100);
+}
