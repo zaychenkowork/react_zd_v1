@@ -9,6 +9,15 @@
         "export PATH=\"/Users/zeddz/.nvm/versions/node/v24.13.1/bin:$PATH\" && pnpm dev"
       ],
       "port": 5173
+    },
+    {
+      "name": "storybook",
+      "runtimeExecutable": "/bin/zsh",
+      "runtimeArgs": [
+        "-lc",
+        "export PATH=\"/Users/zeddz/.nvm/versions/node/v24.13.1/bin:$PATH\" && pnpm storybook"
+      ],
+      "port": 6006
     }
   ]
 }
