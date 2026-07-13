@@ -94,9 +94,37 @@ export default tseslint.config(
             },
             {
               target: './src/api/**/*',
-              from: ['./src/ui/**/*', './src/blocks/**/*', './src/pages/**/*'],
+              from: [
+                './src/ui/**/*',
+                './src/blocks/**/*',
+                './src/pages/**/*',
+                './src/app/**/*',
+              ],
               message:
-                'api/ must not import ui/, blocks/ or pages/ (store/ is allowed for the auth token).',
+                'api/ must not import ui/, blocks/, pages/ or app/ (store/ is allowed for the auth token).',
+            },
+            {
+              target: './src/store/**/*',
+              from: [
+                './src/api/**/*',
+                './src/ui/**/*',
+                './src/blocks/**/*',
+                './src/pages/**/*',
+                './src/app/**/*',
+              ],
+              message:
+                'store/ is client state only — it must not import api/, ui/, blocks/, pages/ or app/.',
+            },
+            {
+              target: './src/hooks/**/*',
+              from: [
+                './src/api/**/*',
+                './src/blocks/**/*',
+                './src/pages/**/*',
+                './src/app/**/*',
+              ],
+              message:
+                'hooks/ may wrap store/i18n but must not import api/ (query hooks live in api/queries), blocks/, pages/ or app/.',
             },
           ],
         },

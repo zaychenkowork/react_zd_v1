@@ -103,7 +103,8 @@ react_zd_v1/
 ```
 
 **Направление импортов (однонаправленно, вниз):**
-`app → pages → blocks → api → store → { ui, hooks } → { i18n, schemas, utils, types, config, constants }`
+`app → pages → blocks → api → store → ui → { i18n, schemas, utils, types, config, constants }`
+- `hooks` — вспомогательный слой сбоку от цепочки: МОЖНО импортировать store/i18n/utils (обёртки useTheme/useLanguage), НЕЛЬЗЯ — api (query-хуки живут в api/queries), blocks, pages, app. Хук, использующий store, не должен применяться внутри ui-компонентов (контролируется ревью, не линтером).
 - `ui` НЕ импортирует: api, store, blocks, pages, app (i18n можно — Controlled-обёртки переводят ключи ошибок).
 - `blocks` НЕ импортирует pages/app. `api` НЕ импортирует ui/blocks/pages (store — можно: интерсепторам нужен токен).
 - Формулировка правила ui: компонент из `ui/` **не знает о сторах и API** (всё через пропсы). Дело не в «бизнес-логике», а в связанности: подключённый к store/api компонент живёт в `pages/<Page|Layout>/components/` (пока нужен в одном месте) или в `blocks/` (когда переиспользуется).
@@ -260,7 +261,7 @@ Button, Input + ControlledInput, ToastMessage (стилизация react-toasti
 - `docs/forms.md`: RHF + Zod 4 + zod4Resolver (почему кастомный: issue #842 + критерий миграции на официальный), Controlled-паттерн, i18n-ключи ошибок.
 - `docs/theming.md` (токены-шкалы, инверсия, как добавить токен), `docs/i18n.md` (языки, RTL, типизация ключей, satisfies-проверка локалей), `docs/modals.md` (ModalCore parent-owned + рецепт глобального менеджера на будущее: useModalStore, типизированный реестр, ModalHost), `docs/testing.md` (__tests__ зеркало, что покрываем обязательно: utils и ui/components; пороги).
 - `CLAUDE.md`: выжимка правил для агентов (слои, барели, версии-ограничения TS/ESLint, тесты, коммиты) — по образцу RN-тимплейта, кратко.
-- `.claude/skills/code-review/SKILL.md`: проектный ревью-скилл — чеклист: границы слоёв, отсутствие барелей, бизнес-логика не в ui/, query-паттерны (fetcher, фабрика ключей, meta-тосты), формы через Controlled+схемы, i18n-ключи вместо строк, тесты в __tests__ зеркально, **+ проверка актуальности: статус react-hook-form/resolvers#842 (миграция на официальный резолвер), поддержка ESLint 10 в eslint-plugin-react, поддержка TS 6+ в typescript-eslint**.
+- `.claude/skills/code-review/SKILL.md`: проектный ревью-скилл — чеклист: границы слоёв, отсутствие барелей, связанность (store/api) не в ui/, хуки со store не используются в ui-компонентах, query-паттерны (fetcher, фабрика ключей, meta-тосты), формы через Controlled+схемы, i18n-ключи вместо строк, тесты в __tests__ зеркально, **+ проверка актуальности: статус react-hook-form/resolvers#842 (миграция на официальный резолвер), поддержка ESLint 10 в eslint-plugin-react, поддержка TS 6+ в typescript-eslint**.
 - Удалить `SETUP_PLAN.md` и `SETUP_NOTES.md` (если пуст) в финальном коммите — их содержимое к этому моменту размазано по docs/.
 
 **Приёмка:** все ссылки в docs валидны, README-команды воспроизводимы.
