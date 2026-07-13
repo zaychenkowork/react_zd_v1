@@ -176,4 +176,11 @@ export default tseslint.config(
       'no-restricted-syntax': 'off',
     },
   },
+  {
+    // Test helpers aren't part of the Vite dev server's HMR boundary.
+    files: ['__tests__/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 );

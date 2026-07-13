@@ -1,7 +1,7 @@
 import type { FC, SVGProps } from 'react';
 
-import Chevron from './svg/chevron.svg?react';
-import Search from './svg/search.svg?react';
+import Chevron from '~/ui/icons/svg/chevron.svg';
+import Search from '~/ui/icons/svg/search.svg';
 
 type SVGComponent = FC<SVGProps<SVGSVGElement>>;
 
