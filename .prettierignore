@@ -1,0 +1,6 @@
+dist
+coverage
+storybook-static
+*.tsbuildinfo
+pnpm-lock.yaml
+*.md

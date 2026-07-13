@@ -42,3 +42,27 @@ Error [ERR_UNKNOWN_BUILTIN_MODULE]: No such built-in module: node:sqlite
 **Решение:** скрипт `"prepare": "husky"` добавлен в `package.json` в фазе 2, в момент когда husky фактически
 установлен и настраивается (естественный порядок из официального flow husky v9: install → add prepare script →
 init hooks). В фазе 0 остальные скрипты из списка добавлены как есть; `prepare` временно отсутствует.
+
+## Фаза 2
+
+### 3. `import-x/no-restricted-paths` не резолвит алиас `~/*` без отдельного TS-резолвера
+
+Таблица версий плана не содержит пакет для резолва TypeScript path-алиасов в ESLint (`eslint-import-resolver-typescript`
+или аналог). Без него `import-x/no-restricted-paths` не срабатывает вообще: правило внутри себя вызывает
+`resolve(importPath, context)`, и без настроенного резолвера алиас `~/api/client` не резолвится в абсолютный путь —
+правило тихо возвращается без репорта, независимо от того, существует ли целевой файл на диске. Проверено эмпирически:
+с дефолтным резолвером (только `eslint-plugin-import-x`, без доп. пакета) подставной импорт `~/api/client` из
+`src/ui/_boundary-probe.ts` НЕ ловился; `pnpm lint` завершался с exit 0.
+
+**Решение:** добавлен `eslint-import-resolver-typescript` (актуальная версия на момент установки — `4.4.5`,
+peer deps `eslint: '*'`, `eslint-plugin-import-x: '*'` — конфликтов с зафиксированными в плане версиями нет)
+как devDependency, отсутствующая в таблице плана. Настроен через `settings['import-x/resolver-next']:
+[createTypeScriptImportResolver(), createNodeResolver()]` в `eslint.config.js`. После этого зональная проверка
+подтверждена дважды:
+- подставной импорт `import '~/api/client'` из `src/ui/_boundary-probe.ts` → `import-x/no-restricted-paths`
+  ловит нарушение зоны `ui/`;
+- подставной импорт `import '~/api'` (без пути до файла) из того же файла → core-правило `no-restricted-imports`
+  ловит попытку импортировать слой целиком (защита от барелей).
+
+Оба пробных файла (`src/ui/_boundary-probe.ts` и временный `src/api/client.ts`, созданный только для того, чтобы
+резолвер нашёл реальный файл под `~/api/`) удалены после проверки; `pnpm lint` снова зелёный.
