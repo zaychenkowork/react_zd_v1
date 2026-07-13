@@ -1,0 +1,16 @@
+/**
+ * Maps react-toastify's own custom properties onto our design tokens so
+ * toasts follow the active [data-theme] instead of the library's defaults.
+ */
+:root {
+  --toastify-color-light: var(--color-primary-0);
+  --toastify-color-dark: var(--color-primary-950);
+  --toastify-toast-background: var(--color-primary-0);
+  --toastify-text-color-light: var(--color-primary-950);
+  --toastify-text-color-dark: var(--color-primary-0);
+  --toastify-color-info: var(--color-blue-500);
+  --toastify-color-success: var(--color-green-500);
+  --toastify-color-warning: var(--color-red-400);
+  --toastify-color-error: var(--color-red-500);
+  --toastify-color-progress-light: var(--color-blue-500);
+}

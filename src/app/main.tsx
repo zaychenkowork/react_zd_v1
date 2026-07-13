@@ -1,3 +1,5 @@
+import '~/i18n/index';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 

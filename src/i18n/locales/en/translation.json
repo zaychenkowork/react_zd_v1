@@ -1,0 +1,20 @@
+{
+  "common": {
+    "appName": "react-zd-v1",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Enter a valid email address",
+    "minLength": "Must be at least {{count}} characters",
+    "maxLength": "Must be at most {{count}} characters"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "UNKNOWN_ERROR": "Something went wrong. Please try again.",
+    "NETWORK_ERROR": "Network error — check your connection and try again."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "common": {
+    "appName": "react-zd-v1",
+    "loading": "جارٍ التحميل…",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "close": "إغلاق"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا",
+    "minLength": "يجب ألا يقل عن {{count}} أحرف",
+    "maxLength": "يجب ألا يزيد عن {{count}} أحرف"
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. حاول مرة أخرى.",
+    "UNKNOWN_ERROR": "حدث خطأ ما. حاول مرة أخرى.",
+    "NETWORK_ERROR": "خطأ في الشبكة — تحقق من اتصالك وحاول مرة أخرى."
+  }
+}

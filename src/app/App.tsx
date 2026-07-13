@@ -1,5 +1,14 @@
+import { QueryProvider } from '~/app/providers/QueryProvider';
+import { ToastProvider } from '~/app/providers/ToastProvider';
+
 function App() {
-  return <div>react-zd-v1</div>;
+  return (
+    <QueryProvider>
+      <ToastProvider>
+        <div>react-zd-v1</div>
+      </ToastProvider>
+    </QueryProvider>
+  );
 }
 
 export default App;
