@@ -15,10 +15,3 @@
 .email {
   color: var(--color-grey-600);
 }
-
-.skeleton {
-  height: 4.5rem;
-  max-width: 20rem;
-  border-radius: 8px;
-  background-color: var(--color-grey-100);
-}

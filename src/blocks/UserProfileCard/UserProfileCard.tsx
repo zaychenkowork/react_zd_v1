@@ -1,3 +1,5 @@
+import { Skeleton } from '~/ui/components/Skeleton/Skeleton';
+
 import { useUserProfileQuery } from '~/api/queries/profile/useUserProfileQuery';
 
 import styles from './UserProfileCardStyles.module.css';
@@ -11,9 +13,7 @@ export function UserProfileCard() {
   const { data, isPending, isError } = useUserProfileQuery();
 
   if (isPending) {
-    // eslint-disable-next-line sonarjs/todo-tag -- intentional, ui kit lands in phase 6
-    // TODO: replace with ui/components/Skeleton once it lands in phase 6.
-    return <div className={styles.skeleton} aria-hidden="true" />;
+    return <Skeleton loading height="4.5rem" width="20rem" />;
   }
 
   // The global QueryCache (see app/providers/QueryProvider.tsx) already

@@ -1,0 +1,15 @@
+.container {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-primary-0);
+  border: 1px solid var(--color-grey-200);
+  border-left: 4px solid;
+}
+
+.message {
+  color: var(--color-primary-950);
+  text-align: left;
+}
