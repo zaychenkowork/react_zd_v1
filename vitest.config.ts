@@ -25,6 +25,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './__tests__/setup/setupTests.ts',
     css: true,
+    // .claude/worktrees holds live git worktrees of background agent
+    // sessions — full repo copies that must never leak into test runs.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
     coverage: {
       provider: 'v8',
       include: ['src/utils/**/*', 'src/ui/components/**/*', 'src/store/**/*'],

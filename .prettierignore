@@ -4,3 +4,4 @@ storybook-static
 *.tsbuildinfo
 pnpm-lock.yaml
 *.md
+.claude/worktrees/

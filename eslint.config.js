@@ -17,7 +17,7 @@ const restrictedLayerImport = (name) => ({
 });
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'storybook-static'] },
+  { ignores: ['dist', 'coverage', 'storybook-static', '.claude/worktrees'] },
   {
     extends: [
       js.configs.recommended,
