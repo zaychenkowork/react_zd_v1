@@ -6,8 +6,9 @@ import { STORAGE_KEYS } from '~/constants/storageKeys';
 
 import { resources, supportedLanguages } from './resources';
 
-function applyTextDirection(lang: string) {
+function applyLanguageAttributes(lang: string) {
   document.documentElement.dir = i18n.dir(lang);
+  document.documentElement.lang = lang;
 }
 
 i18n
@@ -27,7 +28,7 @@ i18n
     },
   });
 
-applyTextDirection(i18n.language);
-i18n.on('languageChanged', applyTextDirection);
+applyLanguageAttributes(i18n.language);
+i18n.on('languageChanged', applyLanguageAttributes);
 
 export default i18n;

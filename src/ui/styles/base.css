@@ -14,6 +14,14 @@ body {
   min-height: 100vh;
   background-color: var(--color-primary-0);
   color: var(--color-primary-950);
+  /* TODO(design): swap for the product font from Figma (see ui/fonts/). */
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 img,
