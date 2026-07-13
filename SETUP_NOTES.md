@@ -1,5 +1,11 @@
 # SETUP_NOTES
 
+> **Статус: сетап завершён.** Первоисточник находок для аудита; актуальные из них уже перенесены
+> в рабочую документацию — `docs/testing.md` (SVGR/vitest, coverage `skipFull`), `README.md`
+> (Troubleshooting — PATH-префикс pnpm/node, `ERR_PNPM_IGNORED_BUILDS`), `docs/conventions.md`
+> (резолвер путей для `import-x/no-restricted-paths`, директивы `sonarjs`), `docs/i18n.md`
+> (`~/i18n/index` вместо bare `~/i18n`).
+
 Отклонения от SETUP_PLAN.md, зафиксированные по правилу 5 (не импровизировать — записать и продолжить).
 
 ## Фаза 0
