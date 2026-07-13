@@ -1,9 +1,9 @@
-export interface ApiErrorParams {
+export type ApiErrorParams = {
   code: string;
   status: number;
   message: string;
   details?: Record<string, unknown>;
-}
+};
 
 /**
  * Normalized shape every failed request is converted to by the response
@@ -23,3 +23,21 @@ export class ApiError extends Error {
     this.details = details;
   }
 }
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type AuthTokensResponse = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type UserProfile = {
+  id: string;
+  email: string;
+  displayName: string;
+};
+
+export type UpdateProfileRequest = Partial<Pick<UserProfile, 'displayName'>>;

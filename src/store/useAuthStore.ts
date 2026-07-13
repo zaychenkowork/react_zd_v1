@@ -3,17 +3,17 @@ import { persist } from 'zustand/middleware';
 
 import { STORAGE_KEYS } from '~/constants/storageKeys';
 
-interface AuthTokens {
+type AuthTokens = {
   accessToken: string;
   refreshToken: string;
-}
+};
 
-interface AuthState {
+type AuthState = {
   accessToken: string | null;
   refreshToken: string | null;
   setTokens: (tokens: AuthTokens) => void;
   clearTokens: () => void;
-}
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(

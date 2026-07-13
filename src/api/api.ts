@@ -1,22 +1,11 @@
 import { apiClient } from '~/api/client';
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface AuthTokensResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  displayName: string;
-}
-
-export type UpdateProfileRequest = Partial<Pick<UserProfile, 'displayName'>>;
+import type {
+  AuthTokensResponse,
+  LoginRequest,
+  UpdateProfileRequest,
+  UserProfile,
+} from '~/types/api';
 
 export const api = {
   auth: {

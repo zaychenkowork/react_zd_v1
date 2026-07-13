@@ -16,11 +16,11 @@ function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
 }
 
-interface ThemeState {
+type ThemeState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
-}
+};
 
 export const useThemeStore = create<ThemeState>()(
   persist(
