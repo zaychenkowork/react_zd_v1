@@ -5,6 +5,8 @@ import { useLanguage } from '~/hooks/useLanguage';
 import type { Language } from '~/i18n/resources';
 import { supportedLanguages } from '~/i18n/resources';
 
+import { LANGUAGE_NAMES } from '~/constants/languages';
+
 import styles from './LanguageSwitcherStyles.module.css';
 
 // eslint-disable-next-line sonarjs/todo-tag -- intentional, ui kit lands in phase 6
@@ -23,7 +25,7 @@ export function LanguageSwitcher() {
     >
       {supportedLanguages.map((lang) => (
         <option key={lang} value={lang}>
-          {t(`language.${lang}`)}
+          {LANGUAGE_NAMES[lang]}
         </option>
       ))}
     </select>

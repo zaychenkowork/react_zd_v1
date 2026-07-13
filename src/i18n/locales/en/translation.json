@@ -30,10 +30,7 @@
     "dark": "Dark"
   },
   "language": {
-    "label": "Language",
-    "en": "English",
-    "uk": "Ukrainian",
-    "ar": "Arabic"
+    "label": "Language"
   },
   "home": {
     "title": "react-zd-v1",
