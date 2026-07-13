@@ -1,22 +1,22 @@
-# Темизация
+# Theming
 
-## Токены
+## Tokens
 
-`src/ui/styles/tokens.css` — CSS custom properties на `:root`, шкалы, не семантические имена
-(`--color-grey-500`, не `--color-text-secondary`) — палитра пришла напрямую из дизайна как есть.
-Шкалы:
+`src/ui/styles/tokens.css` — CSS custom properties on `:root`, scale-based, not semantic names
+(`--color-grey-500`, not `--color-text-secondary`) — the palette came straight from the design as-is.
+Scales:
 
-- `--color-primary-{0,950}` — крайние точки основной шкалы (белый/чёрный).
+- `--color-primary-{0,950}` — the endpoints of the primary scale (white/black).
 - `--color-grey-{100..950}`, `--color-red-{50,400,500,950}`, `--color-green-{50,400,500,950}`,
   `--color-blue-{50,400,500,950}`, `--color-coral-{50,100}`.
-- `--gradient-linear` — заглушка (см. `TODO(design)` в файле): точные цветовые стопы ждут
-  финальных значений из Figma.
+- `--gradient-linear` — a placeholder (see `TODO(design)` in the file): exact color stops are
+  waiting on final values from Figma.
 
-## Дарк-тема = инверсия шкалы
+## Dark theme = scale inversion
 
-Тёмная тема не вводит новые токены — она **переопределяет те же имена** под
-`[data-theme='dark']` инверсией шкалы (то, что в light было `100`, в dark становится значением
-из `900`, и наоборот):
+The dark theme doesn't introduce new tokens — it **overrides the same names** under
+`[data-theme='dark']` by inverting the scale (what was `100` in light becomes the value that was
+`900` in dark, and vice versa):
 
 ```css
 :root {
@@ -24,57 +24,57 @@
   --color-grey-900: #1a1a1a;
 }
 [data-theme='dark'] {
-  --color-grey-100: #1a1a1a; /* было --color-grey-900 в light */
-  --color-grey-900: #f7f7f7; /* было --color-grey-100 в light */
+  --color-grey-100: #1a1a1a; /* was --color-grey-900 in light */
+  --color-grey-900: #f7f7f7; /* was --color-grey-100 in light */
 }
 ```
 
-Компоненты используют только имя токена (`var(--color-grey-900)`) — переключение темы не требует
-никакой правки в CSS-модулях компонентов, только смены атрибута на `<html>`.
+Components only use the token name (`var(--color-grey-900)`) — switching themes requires no
+changes to component CSS modules, only flipping the attribute on `<html>`.
 
-## Механика переключения
+## Switching mechanics
 
-`document.documentElement.dataset.theme` — единственный переключатель. Ставится:
+`document.documentElement.dataset.theme` is the single switch. It's set:
 
-- при старте — `src/store/useThemeStore.ts` инициализирует тему из `localStorage`
-  (`STORAGE_KEYS.theme`, `zustand/middleware/persist`), а если в сторадже ничего нет —
-  из `prefers-color-scheme`;
-- при переключении — `setTheme`/`toggleTheme` из стора, обёрнутые в `hooks/useTheme.ts` (тонкая
-  обёртка без бизнес-логики — сам стор её содержит).
+- on startup — `src/store/useThemeStore.ts` initializes the theme from `localStorage`
+  (`STORAGE_KEYS.theme`, `zustand/middleware/persist`), and if there's nothing in storage,
+  from `prefers-color-scheme`;
+- on toggling — `setTheme`/`toggleTheme` from the store, wrapped by `hooks/useTheme.ts` (a thin
+  wrapper with no business logic — the store itself holds that).
 
-`ThemeSwitcher` (`pages/layouts/MainLayout/components/ThemeSwitcher/`) — единственный
-потребитель `useTheme` на сегодня; почему он не в `ui/`, см. `docs/architecture.md`.
+`ThemeSwitcher` (`pages/layouts/MainLayout/components/ThemeSwitcher/`) is the sole
+consumer of `useTheme` today; for why it isn't in `ui/`, see `docs/architecture.md`.
 
-RTL выставляется отдельно, из i18n (`document.documentElement.dir`), не из темы — см.
+RTL is set separately, from i18n (`document.documentElement.dir`), not from the theme — see
 `docs/i18n.md`.
 
-## Как добавить токен
+## Adding a token
 
-1. Добавить переменную в `:root` в `tokens.css` со значением для light.
-2. Добавить ту же переменную в `[data-theme='dark']` со значением для dark (обычно — зеркальное
-   значение той же шкалы, см. таблицу инверсии выше).
-3. Использовать `var(--имя-токена)` в CSS-модуле компонента — не хардкодить hex.
+1. Add the variable to `:root` in `tokens.css` with the light value.
+2. Add the same variable under `[data-theme='dark']` with the dark value (usually the mirrored
+   value of the same scale, see the inversion table above).
+3. Use `var(--token-name)` in the component's CSS module — don't hardcode hex values.
 
-## Иконки наследуют цвет темы
+## Icons inherit the theme color
 
 `vite.config.ts`, `svgr({ svgrOptions: { replaceAttrValues: { '#0B0B0C': 'currentColor' } } })` —
-SVGR-трансформ подменяет фиксированный цвет заливки/обводки в исходном SVG (`#0B0B0C`, чёрный —
-цвет, в котором обычно экспортируют иконки из Figma) на `currentColor`, поэтому `ui/icons/Icon.tsx`
-может управлять цветом иконки через CSS (`stroke`/`color`) — в том числе через токены темы — без
-правки самого SVG-файла. Новая иконка, добавленная в `ui/icons/svg/`, должна использовать тот же
-исходный цвет `#0B0B0C`, иначе трансформ её не подхватит.
+the SVGR transform replaces the fixed fill/stroke color in the source SVG (`#0B0B0C`, black —
+the color icons are usually exported in from Figma) with `currentColor`, so `ui/icons/Icon.tsx`
+can control the icon's color via CSS (`stroke`/`color`) — including via theme tokens — without
+touching the SVG file itself. A new icon added to `ui/icons/svg/` must use the same source
+color `#0B0B0C`, otherwise the transform won't pick it up.
 
-Импорт иконок — через алиас (`~/ui/icons/svg/chevron.svg`), не относительный путь: типизация
-`.svg`-импорта неоднозначна (базовые типы `vite/client` объявляют generic `*.svg` → `string`,
-трансформ SVGR превращает **все** `**/*.svg` в компонент независимо от того, есть суффикс `?react`
-или нет). Точечная аугментация `declare module '~/ui/icons/svg/*.svg'` в `src/vite-env.d.ts`
-перекрывает общий паттерн `*.svg` именно для этого пути (TS выбирает самый специфичный wildcard),
-типизируя импорт как `FC<SVGProps<SVGSVGElement>>` без обращения к типам `vite-plugin-svgr/client`
-(которые описывают только суффикс `?react`, не используемый в этом шаблоне — см. `docs/testing.md`
-про то, почему `?react` не годится и под vitest).
+Icons are imported via the alias (`~/ui/icons/svg/chevron.svg`), not a relative path: typing for
+`.svg` imports is ambiguous (the base `vite/client` types declare a generic `*.svg` → `string`,
+while the SVGR transform turns **all** `**/*.svg` into a component regardless of whether the
+`?react` suffix is present). A targeted augmentation, `declare module '~/ui/icons/svg/*.svg'` in
+`src/vite-env.d.ts`, overrides the generic `*.svg` pattern for exactly this path (TS picks the
+most specific matching wildcard), typing the import as `FC<SVGProps<SVGSVGElement>>` without
+relying on `vite-plugin-svgr/client` types (which only describe the `?react` suffix, which this
+template doesn't use — see `docs/testing.md` for why `?react` doesn't work under vitest either).
 
-## Типографика и шрифты — сознательно минимальны
+## Typography and fonts — deliberately minimal
 
-`ui/styles/typography.css` содержит только `.text-body`/`.text-heading` — полноценная шкала
-(веса, размеры, line-height) и файлы шрифта в `ui/fonts/` добавляются по задачам из
-дизайн-тикетов после сетапа, не входят в план шаблона.
+`ui/styles/typography.css` contains only `.text-body`/`.text-heading` — a full scale
+(weights, sizes, line-height) and font files in `ui/fonts/` will be added per design-ticket work
+after setup, and aren't part of the template's scope.

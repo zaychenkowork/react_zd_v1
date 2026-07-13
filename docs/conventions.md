@@ -1,86 +1,89 @@
-# Конвенции
+# Conventions
 
-## `type` предпочтительнее `interface`
+## `type` over `interface`
 
-Во всём `src/` типы объявляются через `type`. `interface` — только там, где нужен
-declaration merging / аугментация существующего типа (это единственное, чего `type` не умеет):
+Throughout `src/`, types are declared with `type`. `interface` is used only where declaration
+merging / augmenting an existing type is needed (the one thing `type` can't do):
 
-- `interface Register` в `src/types/tanstack-query.d.ts` — расширяет типы TanStack Query
+- `interface Register` in `src/types/tanstack-query.d.ts` — extends TanStack Query types
   (`queryMeta`, `mutationMeta`, `defaultError`).
-- `interface ImportMetaEnv`/`ImportMeta` в `src/vite-env.d.ts` — аугментация типов Vite.
-- `interface CustomTypeOptions` в `src/i18n/i18n.d.ts` — аугментация типов i18next.
+- `interface ImportMetaEnv`/`ImportMeta` in `src/vite-env.d.ts` — Vite type augmentation.
+- `interface CustomTypeOptions` in `src/i18n/i18n.d.ts` — i18next type augmentation.
 
-Пропсы компонентов допустимо объявлять рядом с компонентом (`export type ButtonProps = {...}`
-в `Button.tsx`) — не обязательно выносить в `types/`. DTO запросов/ответов API, наоборот,
-не инлайнятся в код-файлы — они живут в `types/api.ts` (или `types/<domain>.ts`, когда
-разрастётся), см. `docs/api-layer.md`.
+Component props may be declared next to the component (`export type ButtonProps = {...}`
+in `Button.tsx`) — there's no need to move them into `types/`. API request/response DTOs, on
+the other hand, are not inlined in code files — they live in `types/api.ts` (or
+`types/<domain>.ts` once it grows), see `docs/api-layer.md`.
 
-## Барели запрещены
+## Barrels are forbidden
 
-Нигде в `src/` (и в `stories/`) нет `index.ts` с реэкспортами. Все импорты — прямые, через файл,
-через алиас `~/`: `import { Button } from '~/ui/components/Button/Button'`, не
-`import { Button } from '~/ui/components'`.
+There is no `index.ts` with re-exports anywhere in `src/` (or in `stories/`). All imports are
+direct, through the file, via the `~/` alias: `import { Button } from '~/ui/components/Button/Button'`,
+not `import { Button } from '~/ui/components'`.
 
-**Правило: барел уместен только на границе пакета** (свой `package.json`, импорт по имени пакета
-— npm-библиотека или пакет монорепы), **не на границе папки**. В приложении граница папки —
-это `src/ui/`, `src/api/` и т.п.: они не публикуются и не импортируются извне по имени, поэтому
-барел там не даёт того, для чего он существует (стабильный публичный API пакета), а только
-добавляет:
+**Rule: a barrel makes sense only at a package boundary** (its own `package.json`, imported by
+package name — an npm library or a monorepo package), **not at a folder boundary**. In the app, a
+folder boundary is e.g. `src/ui/`, `src/api/`: they aren't published and aren't imported from
+outside by name, so a barrel there doesn't provide what it exists for (a stable public package
+API) and only adds:
 
-- **лишний код в графе модулей** — barrel-файл импортирует (и потому включает в граф) весь
-  слой целиком, даже если снаружи нужен один файл;
-- **более медленный dev-server/тесты** — известный кейс от Vercel: 11 000 модулей вместо
-  membrane-барела → 3000 с барелом → 500 без него
-  ([marvinh.dev, «Speeding up the JavaScript ecosystem — Barrel Files»](https://marvinh.dev/blog/speeding-up-javascript-ecosystem-part-7/));
-- **более лёгкий обратный импорт** (barrel из `ui/` подмешивает в него что угодно, включая
-  случайный импорт `store`/`api`) — то, что должен ловить `import-x/no-restricted-paths`.
+- **extra code in the module graph** — a barrel file imports (and therefore includes in the
+  graph) the entire layer, even when only one file is needed from outside;
+- **a slower dev server/tests** — a known case from Vercel: 11,000 modules instead of
+  3,000 with a membrane barrel → 500 without one
+  ([marvinh.dev, "Speeding up the JavaScript ecosystem — Barrel Files"](https://marvinh.dev/blog/speeding-up-javascript-ecosystem-part-7/));
+- **easier accidental reverse imports** (a barrel from `ui/` mixes in anything, including
+  an accidental import of `store`/`api`) — something `import-x/no-restricted-paths` is meant to catch.
 
-Подробный разбор — [tkdodo.eu, «Please Stop Using Barrel Files»](https://tkdodo.eu/blog/please-stop-using-barrel-files).
-bulletproof-react в какой-то момент тоже развернул рекомендацию в эту сторону
-(`project-structure.md` в их репозитории явно советует не заводить барелы уровня фичи/слоя).
+Detailed breakdown — [tkdodo.eu, "Please Stop Using Barrel Files"](https://tkdodo.eu/blog/please-stop-using-barrel-files).
+bulletproof-react also reversed its recommendation on this at some point
+(`project-structure.md` in their repository now explicitly advises against feature/layer-level barrels).
 
-Инфраструктура вместо барела:
+Infrastructure instead of a barrel:
 
-- **Порядок импортов** — `eslint-plugin-simple-import-sort` с группами по слоям
-  (`eslint.config.js`, `simple-import-sort/imports`): side-effects → `react`/внешние пакеты →
+- **Import order** — `eslint-plugin-simple-import-sort` with groups by layer
+  (`eslint.config.js`, `simple-import-sort/imports`): side-effects → `react`/external packages →
   `~/app` → `~/pages` → `~/blocks` → `~/ui` → `~/api` → `~/store` → `~/hooks` → `~/i18n` →
   `~/schemas` → `~/utils` → `~/types` → `~/config` → `~/constants` → relative → `.css`.
-- **Инкапсуляция слоёв** — `import-x/no-restricted-paths` (зоны, см. `docs/architecture.md`)
-  и `no-restricted-imports` (запрет bare-импорта слоя целиком, `~/ui` без пути до файла) —
-  вторая защита это как раз защита именно от барелов: если бы `ui/index.ts` появился, импорт
-  `~/ui` не прошёл бы линт независимо от того, барел это или нет.
+- **Layer encapsulation** — `import-x/no-restricted-paths` (zones, see `docs/architecture.md`)
+  and `no-restricted-imports` (bans bare-importing a whole layer, `~/ui` without a path to a
+  file) — the second is precisely a defense against barrels: if a `ui/index.ts` ever appeared,
+  `import ~/ui` still wouldn't pass lint, barrel or not.
 
-`import-x/no-restricted-paths` не резолвит алиас `~/*` без отдельного резолвера — без пакета
-`eslint-import-resolver-typescript` (настроен в `eslint.config.js`, `settings['import-x/resolver-next']`)
-правило молчит на любом `~/...`-импорте, не сообщая об ошибке. Не удалять этот пакет при чистке
-зависимостей — он не используется напрямую в коде, но без него граница слоёв не проверяется.
+`import-x/no-restricted-paths` doesn't resolve the `~/*` alias without a separate resolver —
+without the `eslint-import-resolver-typescript` package (configured in `eslint.config.js`,
+`settings['import-x/resolver-next']`) the rule stays silent on any `~/...` import, without
+reporting an error. Don't remove this package when cleaning up dependencies — it isn't used
+directly in code, but without it layer boundaries aren't checked.
 
-## Комментарии-директивы ESLint и TODO
+## ESLint directive comments and TODO
 
-`sonarjs/recommended` включает `sonarjs/todo-tag` (любой комментарий со словом `TODO` — ошибка
-линта) и `sonarjs/void-use` (запрещает оператор `void` целиком). Оба правила не смягчены в общем
-конфиге (не входят в список сознательных послаблений `eslint.config.js`), поэтому:
+`sonarjs/recommended` enables `sonarjs/todo-tag` (any comment containing the word `TODO` is a
+lint error) and `sonarjs/void-use` (bans the `void` operator entirely). Neither rule is relaxed
+in the shared config (they aren't in the list of deliberate relaxations in `eslint.config.js`),
+so:
 
-- Легитимный `TODO`-комментарий — точечный `// eslint-disable-next-line sonarjs/todo-tag -- <причина>`
-  непосредственно перед строкой с `TODO`, не над блоком `/** JSDoc */` (директива действует только
-  на следующую строку — если `TODO` не на первой строке блочного комментария, она не сработает).
-- Fire-and-forget промис (вызов, который сознательно не ожидается) — просто statement-выражение
-  без `await`/`void`, `void` перед вызовом не добавлять.
+- A legitimate `TODO` comment — a targeted `// eslint-disable-next-line sonarjs/todo-tag -- <reason>`
+  right before the line with `TODO`, not above a `/** JSDoc */` block (the directive only
+  affects the following line — if `TODO` isn't on the first line of a block comment, it won't
+  take effect).
+- A fire-and-forget promise (a call that's deliberately not awaited) — just a bare statement
+  expression without `await`/`void`; don't add `void` before the call.
 
-## Импорт-группы
+## Import groups
 
-См. `simple-import-sort/imports` выше — `pnpm lint:fix` сортирует автоматически, руками
-поддерживать порядок не нужно.
+See `simple-import-sort/imports` above — `pnpm lint:fix` sorts automatically, there's no need
+to maintain the order by hand.
 
-## i18n-ключи вместо строк
+## i18n keys instead of strings
 
-Любой текст, видимый пользователю, — через `t('namespace.key')`, не хардкод-строка. Подробности
-и типизация ключей — `docs/i18n.md`.
+Any user-visible text goes through `t('namespace.key')`, not a hardcoded string. Details
+and key typing — `docs/i18n.md`.
 
-## Эндонимы языков
+## Language endonyms
 
-Название языка в переключателе языка — **эндоним** (язык называет сам себя, никогда не
-переводится): `constants/languages.ts`:
+The language name in the language switcher is an **endonym** (a language's name for itself,
+never translated): `constants/languages.ts`:
 
 ```ts
 export const LANGUAGE_NAMES: Record<Language, string> = {
@@ -90,20 +93,35 @@ export const LANGUAGE_NAMES: Record<Language, string> = {
 };
 ```
 
-Причина: пользователь, случайно попавший в чужую локаль, должен узнать название **своего**
-языка визуально — «Українська» узнаваемо, даже если весь остальной интерфейс на арабском;
-переведённое на текущий язык интерфейса название («Ukrainian» на арабском экране) для этого
-не годится.
+Reason: a user who ends up in the wrong locale by accident should be able to recognize the name
+of **their own** language visually — "Українська" is recognizable even if the rest of the UI is
+in Arabic; a name translated into the current UI language ("Ukrainian" on an Arabic screen)
+doesn't achieve that.
 
 ## Conventional commits
 
-Формат коммитов проверяется `commitlint` (`commitlint.config.mjs`, `@commitlint/config-conventional`,
-`header-max-length: 120`) через husky `commit-msg`-хук:
+Commit format is checked by `commitlint` (`commitlint.config.mjs`, `@commitlint/config-conventional`,
+`header-max-length: 120`) via the husky `commit-msg` hook:
 
 ```
-<type>(<scope>): <описание>
+<type>(<scope>): <description>
 ```
 
-`type` — один из `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`, `build`,
-`ci`, `revert` (полный список — `@commitlint/config-conventional`). `scope` опционален, но в
-этом репо используется последовательно (`setup`, `ui`, `api`, …).
+`type` is one of `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`, `build`,
+`ci`, `revert` (full list — `@commitlint/config-conventional`). `scope` is optional but used
+consistently in this repo (`setup`, `ui`, `api`, …).
+
+## Language
+
+All code, comments, documentation, and commit messages in this repository are in English. This
+applies to everything: source files, config, docs, README/CLAUDE.md, PR descriptions.
+
+UI-facing text is the one exception in *form*, not in *language*: it's never hardcoded at all —
+it goes only through i18n keys (`t('namespace.key')`, see "i18n keys instead of strings" above),
+and the underlying `en` locale strings are still English.
+
+Not violations:
+
+- `src/i18n/locales/uk/**` and `src/i18n/locales/ar/**` — translated UI content, that's their job.
+- `constants/languages.ts` — language endonyms (`Українська`, `العربية`) are content, not stray
+  non-English text (see "Language endonyms" above).

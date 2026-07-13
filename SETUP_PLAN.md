@@ -1,26 +1,40 @@
 # SETUP_PLAN — react_zd_v1
 
-> **Статус: сетап завершён (все фазы 0–11 выполнены и закоммичены).** Этот файл — историческая
-> запись плана для последующего аудита, не живая документация. Актуальное описание архитектуры,
-> конвенций и слоёв — в `docs/` (см. `README.md`); текущие обоснования решений разложены по
-> соответствующим файлам `docs/*.md`, а не только в разделе «Обоснования решений» ниже.
+> **Status: setup complete (all phases 0–11 executed and committed).** This file is a
+> historical record of the plan for future audits, not living documentation. The current
+> description of the architecture, conventions, and layers is in `docs/` (see `README.md`);
+> current rationale for decisions is spread across the relevant `docs/*.md` files, not only in
+> the "Decision rationale" section below.
 
-План сетапа React-тимплейта для маркетплейса (аналог fragment.com). Исполняется агентом фаза за фазой; после каждой фазы — ревью. Все решения ниже уже приняты и обсуждению исполнителем **не подлежат** (обоснования и ссылки — в конце файла).
+Setup plan for a React template for a marketplace (similar to fragment.com). Executed by an
+agent phase by phase; each phase is followed by a review. All decisions below have already been
+made and are **not** open to reconsideration by the executor (rationale and links are at the end
+of the file).
 
-## Правила для исполнителя (критично)
+## Rules for the executor (critical)
 
-1. **Версии пакетов прибиты** (см. таблицу). Устанавливать строго `pnpm add <pkg>@<version>`. Ничего не «обновлять» и не заменять на знакомые тебе версии — твои знания об экосистеме могут быть устаревшими, версии сверены с npm 13.07.2026.
-2. **Не выдумывать API.** Если не уверен в сигнатуре — смотри types в `node_modules` установленной версии. Особенно: ESLint 9 flat config, TanStack Query v5 (`MutationCache` колбэки), Zod 4 (`z.string()` API отличается от v3), react-router 8, Storybook 10 CSF.
-3. **Никаких barrel-файлов** (`index.ts` с реэкспортами) нигде в `src/`. Все импорты прямые, через алиас `~/`.
-4. **Каждая фаза заканчивается зелёными проверками**: `pnpm build && pnpm lint && pnpm type-check && pnpm test run` (те, что уже настроены к этой фазе) — и **одним conventional-коммитом** фазы: `feat(setup): phase N — <название>`.
-5. Комментарии в коде — только там, где код не может сказать сам (ограничения, ссылки на issue). Не комментировать очевидное.
-6. Тексты UI — только через i18n-ключи, никаких хардкод-строк (с фазы 5).
-7. Если что-то из плана невозможно выполнить точно как написано (конфликт версий, изменившийся API) — НЕ импровизировать: остановиться и записать проблему в `SETUP_NOTES.md` в корне, продолжить со следующего независимого пункта.
+1. **Package versions are pinned** (see table). Install exactly with `pnpm add <pkg>@<version>`.
+   Don't "update" anything or swap in versions you happen to know — your knowledge of the
+   ecosystem may be stale; versions were checked against npm on 2026-07-13.
+2. **Don't invent APIs.** If unsure about a signature — check the types in `node_modules` for the
+   installed version. Especially: ESLint 9 flat config, TanStack Query v5 (`MutationCache`
+   callbacks), Zod 4 (the `z.string()` API differs from v3), react-router 8, Storybook 10 CSF.
+3. **No barrel files** (`index.ts` with re-exports) anywhere in `src/`. All imports are direct,
+   via the `~/` alias.
+4. **Each phase ends with green checks**: `pnpm build && pnpm lint && pnpm type-check && pnpm test run`
+   (whichever of these are already set up by that phase) — and **a single conventional commit**
+   for the phase: `feat(setup): phase N — <name>`.
+5. Code comments — only where the code can't speak for itself (constraints, links to issues).
+   Don't comment on the obvious.
+6. UI text — only through i18n keys, no hardcoded strings (starting from phase 5).
+7. If something in the plan can't be done exactly as written (version conflict, changed API) —
+   do NOT improvise: stop and record the problem in `SETUP_NOTES.md` at the repo root, and
+   continue with the next independent item.
 
-## Версии (сверены 13.07.2026, npm registry + peer deps)
+## Versions (checked 2026-07-13, npm registry + peer deps)
 
 ### dependencies
-| пакет | версия |
+| package | version |
 |---|---|
 | react / react-dom | 19.2.7 |
 | react-router | 8.2.0 |
@@ -37,18 +51,18 @@
 | classnames | 2.5.1 |
 
 ### devDependencies
-| пакет | версия |
+| package | version |
 |---|---|
 | vite | 8.1.4 |
 | @vitejs/plugin-react | 6.0.3 |
 | vite-plugin-svgr | 5.2.0 |
 | vite-tsconfig-paths | 6.1.1 |
-| typescript | 5.9.3 (**НЕ 6/7** — typescript-eslint поддерживает <6.1) |
+| typescript | 5.9.3 (**NOT 6/7** — typescript-eslint supports <6.1) |
 | @types/react | 19.2.17 |
 | @types/react-dom | 19.2.3 |
 | @types/node | 26.1.1 |
-| eslint | 9.39.5 (**НЕ 10** — eslint-plugin-react не поддерживает) |
-| @eslint/js | ^9.39.0 (**НЕ 10.x**) |
+| eslint | 9.39.5 (**NOT 10** — eslint-plugin-react doesn't support it) |
+| @eslint/js | ^9.39.0 (**NOT 10.x**) |
 | typescript-eslint | 8.63.0 |
 | eslint-plugin-react | 7.37.5 |
 | eslint-plugin-react-hooks | 7.1.1 |
@@ -74,87 +88,124 @@
 | @tanstack/react-query-devtools | 5.101.2 |
 | storybook / @storybook/react-vite / @storybook/addon-themes | 10.5.0 |
 
-НЕ ставить: `@hookform/resolvers` (issue #842, используем кастомный резолвер), `@tanstack/react-virtual` (добавим при появлении длинных списков), `@t3-oss/env-core` (plain zod достаточно в SPA).
+Do NOT install: `@hookform/resolvers` (issue #842, use the custom resolver instead),
+`@tanstack/react-virtual` (add once long lists appear), `@t3-oss/env-core` (plain zod is enough
+in an SPA).
 
-## Целевая структура
+## Target structure
 
 ```
 react_zd_v1/
-├── __tests__/                  # ВСЕ тесты, зеркалит src/ (+ setup/, test-utils.tsx)
-├── stories/                    # ВСЕ Storybook-стори, зеркалит src/ (как __tests__)
+├── __tests__/                  # ALL tests, mirrors src/ (+ setup/, test-utils.tsx)
+├── stories/                    # ALL Storybook stories, mirrors src/ (like __tests__)
 ├── docs/
 ├── public/
 ├── src/
 │   ├── app/                    # main.tsx, App.tsx, router.tsx, providers/, ModalHost
-│   ├── pages/                  # страницы + layouts/; локальные части — pages/<Page>/components/
-│   ├── blocks/                 # переиспользуемые блоки С бизнес-логикой (аналог widgets из FSD)
+│   ├── pages/                  # pages + layouts/; local parts — pages/<Page>/components/
+│   ├── blocks/                 # reusable blocks WITH business logic (like widgets from FSD)
 │   ├── ui/
-│   │   ├── components/         # кирпичики БЕЗ бизнес-логики (Button, Input, ModalCore…)
-│   │   ├── icons/              # svg + Icon-реестр (SVGR)
+│   │   ├── components/         # building blocks WITHOUT business logic (Button, Input, ModalCore…)
+│   │   ├── icons/              # svg + Icon registry (SVGR)
 │   │   ├── fonts/
 │   │   └── styles/             # tokens.css, typography.css, base.css
 │   ├── api/                    # client.ts, api.ts, fetcher.ts, queryKeys.ts, queries/
 │   ├── store/                  # zustand: useThemeStore, useAuthStore
-│   ├── hooks/                  # общие хуки без бизнес-логики
+│   ├── hooks/                  # shared hooks without business logic
 │   ├── i18n/                   # index.ts, i18n.d.ts, locales/{en,uk,ar}/translation.json
-│   ├── schemas/                # zod-схемы: env.ts + схемы форм
+│   ├── schemas/                # zod schemas: env.ts + form schemas
 │   ├── config/                 # env.ts, config.ts, routes.ts, query.ts
 │   ├── constants/
 │   ├── types/
-│   └── utils/                  # zod4Resolver.ts и пр.
+│   └── utils/                  # zod4Resolver.ts etc.
 ├── .claude/skills/code-review/SKILL.md
 ├── CLAUDE.md
 └── README.md
 ```
 
-**Направление импортов (однонаправленно, вниз):**
+**Import direction (unidirectional, downward):**
 `app → pages → blocks → api → store → ui → { i18n, schemas, utils, types, config, constants }`
-- `hooks` — вспомогательный слой сбоку от цепочки: МОЖНО импортировать store/i18n/utils (обёртки useTheme/useLanguage), НЕЛЬЗЯ — api (query-хуки живут в api/queries), blocks, pages, app. Хук, использующий store, не должен применяться внутри ui-компонентов (контролируется ревью, не линтером).
-- `ui` НЕ импортирует: api, store, blocks, pages, app (i18n можно — Controlled-обёртки переводят ключи ошибок).
-- `blocks` НЕ импортирует pages/app. `api` НЕ импортирует ui/blocks/pages (store — можно: интерсепторам нужен токен).
-- Формулировка правила ui: компонент из `ui/` **не знает о сторах и API** (всё через пропсы). Дело не в «бизнес-логике», а в связанности: подключённый к store/api компонент живёт в `pages/<Page|Layout>/components/` (пока нужен в одном месте) или в `blocks/` (когда переиспользуется).
+- `hooks` is an auxiliary layer off to the side of the chain: MAY import store/i18n/utils
+  (wrappers useTheme/useLanguage), MAY NOT import api (query hooks live in api/queries), blocks,
+  pages, app. A hook that uses the store should not be used inside ui components (enforced by
+  review, not the linter).
+- `ui` does NOT import: api, store, blocks, pages, app (i18n is fine — Controlled wrappers
+  translate error keys).
+- `blocks` does NOT import pages/app. `api` does NOT import ui/blocks/pages (store is fine:
+  interceptors need the token).
+- Statement of the `ui` rule: a component from `ui/` **doesn't know about stores and the API**
+  (everything through props). It's not about "business logic" but about coupling: a component
+  connected to store/api lives in `pages/<Page|Layout>/components/` (while needed in one place)
+  or in `blocks/` (once reused).
 
 ---
 
-## Фаза 0 — инициализация
+## Phase 0 — initialization
 
-- pnpm через corepack: `corepack enable && corepack prepare pnpm@11.12.0 --activate` (если corepack недоступен — `npm i -g pnpm@11.12.0`).
-- `package.json`: name `react-zd-v1`, private, type module, `"packageManager": "pnpm@11.12.0"`, `engines.node: ">=20.19.0"`.
-- `.nvmrc` → `20.19.1`. `.gitignore` (node_modules, dist, coverage, *.local, .env*, !.env.example, storybook-static).
-- Скрипты: `dev`, `build` (`tsc -b && vite build`), `preview`, `lint`, `lint:fix`, `format`, `format:check`, `type-check` (`tsc -b --noEmit`), `test` (`vitest`), `test:coverage`, `storybook`, `build-storybook`, `prepare` (`husky`).
+- pnpm via corepack: `corepack enable && corepack prepare pnpm@11.12.0 --activate` (if corepack
+  is unavailable — `npm i -g pnpm@11.12.0`).
+- `package.json`: name `react-zd-v1`, private, type module, `"packageManager": "pnpm@11.12.0"`,
+  `engines.node: ">=20.19.0"`.
+- `.nvmrc` → `20.19.1`. `.gitignore` (node_modules, dist, coverage, *.local, .env*, !.env.example,
+  storybook-static).
+- Scripts: `dev`, `build` (`tsc -b && vite build`), `preview`, `lint`, `lint:fix`, `format`,
+  `format:check`, `type-check` (`tsc -b --noEmit`), `test` (`vitest`), `test:coverage`,
+  `storybook`, `build-storybook`, `prepare` (`husky`).
 
-**Приёмка:** `pnpm install` отрабатывает, git чистый после коммита.
+**Acceptance:** `pnpm install` succeeds, git is clean after the commit.
 
-## Фаза 1 — Vite + TypeScript
+## Phase 1 — Vite + TypeScript
 
-- Установить react, react-dom, vite, @vitejs/plugin-react, vite-plugin-svgr, vite-tsconfig-paths, typescript, @types/*.
-- `vite.config.ts`: plugins `react()`, `tsconfigPaths()`, `svgr({ svgrOptions: { exportType: 'default', ref: true, titleProp: true, replaceAttrValues: { '#0B0B0C': 'currentColor' } }, include: '**/*.svg' })` — трюк с currentColor из брокера.
-- tsconfig project references как в брокере: `tsconfig.json` (refs) + `tsconfig.app.json` + `tsconfig.node.json`. В app: `strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, `noUncheckedSideEffectImports`, `moduleResolution: bundler`, `jsx: react-jsx`, paths `"~/*": ["./src/*"]`, include: `src`, `__tests__`.
-- `src/vite-env.d.ts`: `/// <reference types="vite/client" />` + аугментация `ImportMetaEnv` (VITE_API_URL: string, VITE_ENABLE_DEVTOOLS?: string) + типы `*.svg?react`.
-- `index.html`, `src/app/main.tsx`, `src/app/App.tsx` (пока заглушка).
+- Install react, react-dom, vite, @vitejs/plugin-react, vite-plugin-svgr, vite-tsconfig-paths,
+  typescript, @types/*.
+- `vite.config.ts`: plugins `react()`, `tsconfigPaths()`, `svgr({ svgrOptions: { exportType: 'default', ref: true, titleProp: true, replaceAttrValues: { '#0B0B0C': 'currentColor' } }, include: '**/*.svg' })`
+  — the currentColor trick from the broker project.
+- tsconfig project references as in the broker project: `tsconfig.json` (refs) +
+  `tsconfig.app.json` + `tsconfig.node.json`. In app: `strict`, `noUnusedLocals`,
+  `noUnusedParameters`, `noFallthroughCasesInSwitch`, `noUncheckedSideEffectImports`,
+  `moduleResolution: bundler`, `jsx: react-jsx`, paths `"~/*": ["./src/*"]`, include: `src`,
+  `__tests__`.
+- `src/vite-env.d.ts`: `/// <reference types="vite/client" />` + augment `ImportMetaEnv`
+  (VITE_API_URL: string, VITE_ENABLE_DEVTOOLS?: string) + types for `*.svg?react`.
+- `index.html`, `src/app/main.tsx`, `src/app/App.tsx` (placeholder for now).
 
-**Приёмка:** `pnpm dev` поднимается, `pnpm build` зелёный.
+**Acceptance:** `pnpm dev` starts up, `pnpm build` is green.
 
-## Фаза 2 — качество кода
+## Phase 2 — code quality
 
-- ESLint 9 **flat** config `eslint.config.js` через `tseslint.config()`: `@eslint/js` recommended, tseslint recommended, react flat recommended, react-hooks recommended, react-refresh, sonarjs recommended, config-prettier последним.
-- `simple-import-sort/imports` с группами по слоям: side-effects → react/external → `~/app` → `~/pages` → `~/blocks` → `~/ui` → `~/api` → `~/store` → `~/hooks` → `~/i18n` → `~/schemas` → `~/utils` → `~/types` → `~/config` → `~/constants` → relative → css.
-- **Границы слоёв** — `import-x/no-restricted-paths` zones (правило из bulletproof-react, адаптировать под слои из раздела «Направление импортов»).
-- `no-restricted-syntax`: запрет `import.meta.env` вне `src/config/env.ts` (сообщение: «Use env from ~/config/env»).
-- `no-restricted-imports`: запрет импорта слоёв целиком (`~/ui`, `~/blocks` и т.п. без пути до файла) — защита от барелей.
-- Смягчения как в брокере: `@typescript-eslint/no-explicit-any: off`, `no-unused-vars` c `args: 'none'`, react `prop-types`/`display-name` off; sonarjs cognitive-complexity off.
-- `.prettierrc` как в RN-тимплейте (singleQuote, trailingComma all, tabWidth 2, semi, arrowParens always) + `.editorconfig`.
-- husky: `pre-commit` → `pnpm lint-staged`; `commit-msg` → `npx --no -- commitlint --edit "$1"`; `pre-push` → `pnpm type-check && pnpm test run`.
-- `.lintstagedrc.json`: `*.{ts,tsx}` → eslint --fix + prettier --write; `*.{json,md,css}` → prettier --write. Отдельный полный type-check в pre-push (не в lint-staged — tsc не работает по списку файлов с project refs).
+- ESLint 9 **flat** config `eslint.config.js` via `tseslint.config()`: `@eslint/js` recommended,
+  tseslint recommended, react flat recommended, react-hooks recommended, react-refresh, sonarjs
+  recommended, config-prettier last.
+- `simple-import-sort/imports` with groups by layer: side-effects → react/external →
+  `~/app` → `~/pages` → `~/blocks` → `~/ui` → `~/api` → `~/store` → `~/hooks` → `~/i18n` →
+  `~/schemas` → `~/utils` → `~/types` → `~/config` → `~/constants` → relative → css.
+- **Layer boundaries** — `import-x/no-restricted-paths` zones (a rule from bulletproof-react,
+  adapted to the layers in the "Import direction" section).
+- `no-restricted-syntax`: ban `import.meta.env` outside `src/config/env.ts` (message:
+  "Use env from ~/config/env").
+- `no-restricted-imports`: ban importing whole layers (`~/ui`, `~/blocks` etc. without a path to
+  a file) — a barrel guard.
+- Relaxations, as in the broker project: `@typescript-eslint/no-explicit-any: off`,
+  `no-unused-vars` with `args: 'none'`, react `prop-types`/`display-name` off; sonarjs
+  cognitive-complexity off.
+- `.prettierrc` as in the RN template (singleQuote, trailingComma all, tabWidth 2, semi,
+  arrowParens always) + `.editorconfig`.
+- husky: `pre-commit` → `pnpm lint-staged`; `commit-msg` → `npx --no -- commitlint --edit "$1"`;
+  `pre-push` → `pnpm type-check && pnpm test run`.
+- `.lintstagedrc.json`: `*.{ts,tsx}` → eslint --fix + prettier --write; `*.{json,md,css}` →
+  prettier --write. A separate full type-check runs on pre-push (not in lint-staged — tsc
+  doesn't work on a file list with project refs).
 - `commitlint.config.mjs`: config-conventional, header-max-length 120.
 
-**Приёмка:** `pnpm lint` зелёный; тестовый коммит с плохим сообщением отклоняется; правило границ ловит подставной импорт `~/api` из `src/ui/` (проверить и удалить подставку).
+**Acceptance:** `pnpm lint` is green; a test commit with a bad message is rejected; the boundary
+rule catches a planted import of `~/api` from `src/ui/` (verify and remove the plant).
 
-## Фаза 3 — стили и темизация
+## Phase 3 — styles and theming
 
-- `src/ui/styles/tokens.css` — палитра из дизайна, шкальные токены, дарк-мод инверсией под `[data-theme='dark']`:
+- `src/ui/styles/tokens.css` — palette from the design, scale-based tokens, dark mode by
+  inverting values under `[data-theme='dark']`:
 
-| токен | light | dark |
+| token | light | dark |
 |---|---|---|
 | --color-primary-0 | #FFFFFF | #0A0A0A |
 | --color-primary-950 | #0A0A0A | #FFFFFF |
@@ -183,109 +234,193 @@ react_zd_v1/
 | --color-coral-100 | #D07979 | #866060 |
 | --color-coral-50 | #866060 | #D07979 |
 
-  Плюс `--gradient-linear` (заглушка, TODO-коммент: точные стопы из Figma).
-  **Фаза сознательно минимальная**: токены-палитра + reset + механика переключения темы. Полноценную типографику, spacing/radius-шкалы и шрифт девы сделают после сетапа по задачам из джиры — заготовить пустые `typography.css` (пара базовых классов) и `ui/fonts/` с TODO.
-- `base.css`: reset, `color-scheme: light dark`, body на токенах.
-- `src/store/useThemeStore.ts` (zustand + persist в localStorage, ключи в `constants/storageKeys.ts`): начальное значение — localStorage → `prefers-color-scheme`; сеттер ставит `document.documentElement.dataset.theme`. RTL: `document.documentElement.dir` выставляется из i18n (фаза 4).
+  Plus `--gradient-linear` (a placeholder, TODO comment: exact stops from Figma).
+  **This phase is deliberately minimal**: palette tokens + reset + theme-switching mechanics.
+  Full typography, spacing/radius scales, and font files will be handled after setup via Jira
+  tickets — stub out an empty `typography.css` (a couple of base classes) and `ui/fonts/` with a TODO.
+- `base.css`: reset, `color-scheme: light dark`, body on tokens.
+- `src/store/useThemeStore.ts` (zustand + persist to localStorage, keys in
+  `constants/storageKeys.ts`): initial value — localStorage → `prefers-color-scheme`; the setter
+  sets `document.documentElement.dataset.theme`. RTL: `document.documentElement.dir` is set from
+  i18n (phase 4).
 
-**Приёмка:** переключение `data-theme` в devtools меняет фон/текст; build зелёный.
+**Acceptance:** toggling `data-theme` in devtools changes the background/text; build is green.
 
-## Фаза 4 — инфраструктура (config, api, store, i18n, providers)
+## Phase 4 — infrastructure (config, api, store, i18n, providers)
 
-- `schemas/env.ts` — zod-схема env-переменных (схемы живут в schemas/, как формы).
-- `config/env.ts` — ЕДИНСТВЕННЫЙ файл, читающий `import.meta.env` (паттерн bulletproof-react): сбор переменных, `safeParse` по схеме из `~/schemas/env`, throw с перечислением невалидных, экспорт типизированного `env`. `.env.example` + `.env.development` (VITE_API_URL=http://localhost:3000).
-- `config/config.ts` — прикладной конфиг: `APP_NAME`, `APP_VERSION` (через `define: { __APP_VERSION__: JSON.stringify(pkg.version) }` в vite.config + декларация в vite-env.d.ts), производные от `env` значения. Импортирует `config/env.ts`; код приложения импортирует преимущественно `config.ts`.
-- `config/routes.ts` — `ROUTES` объект (home, login, notFound + пример параметризованного `username(name)`).
+- `schemas/env.ts` — a zod schema for env variables (schemas live in schemas/, like forms).
+- `config/env.ts` — the ONLY file reading `import.meta.env` (the bulletproof-react pattern):
+  gathers variables, `safeParse`s against the schema from `~/schemas/env`, throws listing invalid
+  ones, exports a typed `env`. `.env.example` + `.env.development` (VITE_API_URL=http://localhost:3000).
+- `config/config.ts` — application config: `APP_NAME`, `APP_VERSION` (via
+  `define: { __APP_VERSION__: JSON.stringify(pkg.version) }` in vite.config + a declaration in
+  vite-env.d.ts), values derived from `env`. Imports `config/env.ts`; app code mostly imports `config.ts`.
+- `config/routes.ts` — a `ROUTES` object (home, login, notFound + an example parameterized `username(name)`).
 - `config/query.ts` — staleTime 60s, gcTime 5m, retry: queries 2 / mutations 0.
-- `api/client.ts` — МИНИМАЛЬНЫЙ: axios instance (baseURL из env), request-интерсептор (Authorization из useAuthStore.getState()), response-интерсептор с нормализацией ошибки в `ApiError { code, status, message, details }` (класс в `types/api.ts`). Refresh-single-flight в коде НЕ держим (бэка нет) — полный готовый рецепт с очередью и `_retry` кладётся в `docs/api-layer.md` (фаза 10).
+- `api/client.ts` — MINIMAL: an axios instance (baseURL from env), a request interceptor
+  (Authorization from useAuthStore.getState()), a response interceptor that normalizes errors
+  into `ApiError { code, status, message, details }` (the class lives in `types/api.ts`). We do
+  NOT keep refresh single-flight in code (there's no backend yet) — the full ready-made recipe
+  with a queue and `_retry` goes into `docs/api-layer.md` (phase 10).
 - `api/fetcher.ts` — `fetcher<T>(promise: Promise<AxiosResponse<T>>): Promise<T>`.
-- `api/api.ts` — единый объект по доменам (как apiSauce.ts в брокере): `api.auth.*`, `api.user.*` — 2–3 примерных эндпоинта.
-- `api/queryKeys.ts` — фабрика ключей (паттерн TkDodo): `export const userKeys = { all: ['user'] as const, profile: () => [...userKeys.all, 'profile'] as const, ... }`.
-- `api/queries/<domain>/` — хуки группируются по доменным подпапкам: `api/queries/profile/useUserProfileQuery.ts`, `api/queries/profile/useUpdateProfileMutation.ts` (пример мутации — с `meta.successToast`); будущие админские — `api/queries/admin/...`.
-- DTO-типы запросов/ответов — НЕ в `api/api.ts`, а в `types/api.ts` (или `types/<domain>.ts` при разрастании), объявленные через `type`.
-- `store/useAuthStore.ts` — accessToken/refreshToken в памяти + persist refresh в localStorage (TODO-коммент: заменить на httpOnly-cookie если бэк позволит), selectors-паттерн.
-- `i18n/index.ts` — i18next + LanguageDetector (localStorage → navigator), `supportedLngs: ['en','uk','ar']`, fallback en; `applyTextDirection(lang)` → `document.documentElement.dir = i18n.dir(lang)` (RTL для ar) на `languageChanged`. `i18n/i18n.d.ts` — типизация ключей через `CustomTypeOptions` (как в RN-тимплейте). Локали: `locales/{en,uk,ar}/translation.json` — общие ключи (common, validation, errors) + `uk/ar satisfies` проверка формы по en.
-- QueryClient и его кеши — в `app/providers/queryClient.ts`; `app/providers/QueryProvider.tsx` — только компонент-обёртка (лаконичный). Тосты **строго opt-in**: НИКАКИХ тостов по умолчанию; `meta.errorToast: true` → локализованная ошибка `t('errors.' + error.code, { defaultValue: t('errors.generic') })`, `meta.successToast: '<i18n-ключ>'` → успех; `meta.invalidates: QueryKey[]` → invalidateQueries в onSuccess. Типизация meta (`Register` interface) — НЕ в провайдере, а в `src/types/tanstack-query.d.ts`. Devtools за `env.VITE_ENABLE_DEVTOOLS`.
-- `app/providers/ToastProvider.tsx` — ToastContainer на токенах темы.
-- `hooks/useLanguage.ts`, `hooks/useTheme.ts` — тонкие обёртки над сторами/i18n.
+- `api/api.ts` — a single object organized by domain (like apiSauce.ts in the broker project):
+  `api.auth.*`, `api.user.*` — 2–3 sample endpoints.
+- `api/queryKeys.ts` — a key factory (the TkDodo pattern): `export const userKeys = { all: ['user'] as const, profile: () => [...userKeys.all, 'profile'] as const, ... }`.
+- `api/queries/<domain>/` — hooks are grouped into domain subfolders:
+  `api/queries/profile/useUserProfileQuery.ts`, `api/queries/profile/useUpdateProfileMutation.ts`
+  (a mutation example — with `meta.successToast`); future admin ones — `api/queries/admin/...`.
+- Request/response DTO types — NOT in `api/api.ts`, but in `types/api.ts` (or
+  `types/<domain>.ts` once it grows), declared via `type`.
+- `store/useAuthStore.ts` — accessToken/refreshToken in memory + refresh persisted to
+  localStorage (TODO comment: switch to an httpOnly cookie if the backend allows it), selector pattern.
+- `i18n/index.ts` — i18next + LanguageDetector (localStorage → navigator),
+  `supportedLngs: ['en','uk','ar']`, fallback en; `applyTextDirection(lang)` →
+  `document.documentElement.dir = i18n.dir(lang)` (RTL for ar) on `languageChanged`.
+  `i18n/i18n.d.ts` — key typing via `CustomTypeOptions` (as in the RN template). Locales:
+  `locales/{en,uk,ar}/translation.json` — shared keys (common, validation, errors) +
+  `uk/ar satisfies` shape check against en.
+- `QueryClient` and its caches — in `app/providers/queryClient.ts`;
+  `app/providers/QueryProvider.tsx` — just a wrapper component (kept lean). Toasts **strictly
+  opt-in**: NO toasts by default; `meta.errorToast: true` → a localized error
+  `t('errors.' + error.code, { defaultValue: t('errors.generic') })`, `meta.successToast: '<i18n-key>'` →
+  success; `meta.invalidates: QueryKey[]` → invalidateQueries in onSuccess. `meta` typing (the
+  `Register` interface) — NOT in the provider, but in `src/types/tanstack-query.d.ts`. Devtools
+  gated behind `env.VITE_ENABLE_DEVTOOLS`.
+- `app/providers/ToastProvider.tsx` — a ToastContainer using theme tokens.
+- `hooks/useLanguage.ts`, `hooks/useTheme.ts` — thin wrappers over stores/i18n.
 
-**Приёмка:** приложение стартует с отсутствующей VITE_API_URL → падает с читаемой ошибкой; со env — работает; unit-тесты фазы 8 покроют fetcher/env.
+**Acceptance:** the app starts with a missing VITE_API_URL → fails with a readable error; with
+env set — it works; phase 8's unit tests will cover fetcher/env.
 
-## Фаза 5 — роутер и страницы
+## Phase 5 — router and pages
 
-- `app/router.tsx`: `<BrowserRouter>` + `<Routes>` (декларативно, как привычно команде), страницы через `React.lazy` + `<Suspense>` c PageLoader.
-- `pages/layouts/MainLayout/` (хедер: лого-заглушка, ThemeSwitcher, LanguageSwitcher, слот под auth; футер; `<Outlet/>`), `pages/layouts/AuthLayout/`.
-- `app/ProtectedRoute.tsx` — `isAllowed`/`redirectPath`/`<Outlet/>` как в брокере, на useAuthStore.
-- Страницы-примеры: `pages/Home/HomePage.tsx`, `pages/NotFound/NotFoundPage.tsx`.
-- Один демонстрационный блок, чтобы слой blocks/ был показан кодом: `blocks/UserProfileCard/` — использует `useUserProfileQuery` + ui-кирпичики (Skeleton при загрузке), рендерится на Home. Минимальный, с комментом-ссылкой на docs/architecture.md.
-- `pages/layouts/MainLayout/components/ThemeSwitcher/` и `.../LanguageSwitcher/` — подключённые к сторам, собраны из ui-кирпичиков; лежат локально в лейауте по правилу повышения (нужны в одном месте). В docs/architecture.md отметить их как живой пример правила «ui не знает о сторах».
+- `app/router.tsx`: `<BrowserRouter>` + `<Routes>` (declarative, as the team is used to), pages
+  via `React.lazy` + `<Suspense>` with a PageLoader.
+- `pages/layouts/MainLayout/` (header: logo placeholder, ThemeSwitcher, LanguageSwitcher, an auth
+  slot; footer; `<Outlet/>`), `pages/layouts/AuthLayout/`.
+- `app/ProtectedRoute.tsx` — `isAllowed`/`redirectPath`/`<Outlet/>` as in the broker project, on useAuthStore.
+- Example pages: `pages/Home/HomePage.tsx`, `pages/NotFound/NotFoundPage.tsx`.
+- One demonstration block, so the blocks/ layer is represented in code:
+  `blocks/UserProfileCard/` — uses `useUserProfileQuery` + ui building blocks (Skeleton while
+  loading), rendered on Home. Minimal, with a comment linking to docs/architecture.md.
+- `pages/layouts/MainLayout/components/ThemeSwitcher/` and `.../LanguageSwitcher/` — connected to
+  stores, composed from ui building blocks; live locally in the layout per the promotion rule
+  (needed in one place). Note in docs/architecture.md as a live example of the "ui doesn't know
+  about stores" rule.
 
-**Приёмка:** навигация работает, lazy-чанки видны в network, переключение темы/языка живое, ar переключает dir=rtl.
+**Acceptance:** navigation works, lazy chunks show up in network, theme/language switching is
+live, ar switches dir=rtl.
 
-## Фаза 6 — UI-кит (порт из zedxbroker, ретема на новые токены)
+## Phase 6 — UI kit (ported from zedxbroker, re-themed onto the new tokens)
 
-Портировать из `/Users/zeddz/Desktop/Projects/FRONT/zedxbroker/src/components/` с адаптацией под токены фазы 3 и структуру `ui/components/<Name>/{Name.tsx, NameStyles.module.css}` (без index.ts!). Состав (ТОЛЬКО этот список, остальной кит девы портируют после сетапа):
-Button, Input + ControlledInput, ToastMessage (стилизация react-toastify под токены), Skeleton, Tooltip, Loaders (Spinner, Dots), Icon (SVGR-реестр с enum, 2–3 примерные svg-иконки: chevron/arrow, search).
-На каждый портированный компонент — тест в `__tests__/` (фаза 8) и стори в `stories/` (фаза 9); можно переносить и адаптировать существующие из брокера.
-- `utils/zod4Resolver.ts` — скопировать из брокера как есть (ссылка на issue #842 в JSDoc).
-- `schemas/loginSchema.ts` — пример схемы с i18n-ключами ошибок.
-- Controlled-обёртки переводят ошибки: `t('validation.' + fieldState.error.message)`.
+Port from `/Users/zeddz/Desktop/Projects/FRONT/zedxbroker/src/components/`, adapting to the
+phase-3 tokens and the `ui/components/<Name>/{Name.tsx, NameStyles.module.css}` structure (no
+index.ts!). Scope (ONLY this list, the rest of the kit will be ported by devs after setup):
+Button, Input + ControlledInput, ToastMessage (styling react-toastify with tokens), Skeleton,
+Tooltip, Loaders (Spinner, Dots), Icon (SVGR registry with an enum, 2–3 sample svg icons:
+chevron/arrow, search).
+Each ported component gets a test in `__tests__/` (phase 8) and a story in `stories/` (phase 9);
+existing ones from the broker project may be carried over and adapted.
+- `utils/zod4Resolver.ts` — copy as-is from the broker project (reference to issue #842 in JSDoc).
+- `schemas/loginSchema.ts` — an example schema with i18n error keys.
+- Controlled wrappers translate errors: `t('validation.' + fieldState.error.message)`.
 
-**Приёмка:** каждый компонент рендерится в обеих темах (проверяется сторями фазы 8/9), lint/type-check зелёные.
+**Acceptance:** every component renders in both themes (checked via phase 8/9 stories),
+lint/type-check are green.
 
-## Фаза 7 — модалки (минимум)
+## Phase 7 — modals (minimal)
 
-- Только `ui/components/ModalCore/` — на `radix-ui` Dialog: пропсы isOpen/setOpen/title/description/confirmAction/cancelAction/loading/hasCloseButton (интерфейс как в брокере), parent-owned использование.
-- Маленький parent-owned пример на странице Home (кнопка → модалка).
-- Глобальный менеджер НЕ реализовывать — описать как рецепт в `docs/modals.md` (useModalStore + типизированный реестр + ModalHost), добавят при необходимости.
+- Only `ui/components/ModalCore/` — on radix-ui Dialog: props isOpen/setOpen/title/description/confirmAction/cancelAction/loading/hasCloseButton
+  (the same interface as the broker project), parent-owned usage.
+- A small parent-owned example on the Home page (button → modal).
+- Don't implement the global manager — describe it as a recipe in `docs/modals.md`
+  (useModalStore + a typed registry + ModalHost), to be added when needed.
 
-**Приёмка:** пример на Home работает, фокус-трап и Escape работают (Radix), стори для ModalCore есть.
+**Acceptance:** the Home example works, focus trap and Escape work (Radix), a story exists for ModalCore.
 
-## Фаза 8 — тесты
+## Phase 8 — tests
 
-- `vitest.config.ts`: globals, jsdom, `setupFiles: './__tests__/setup/setupTests.ts'`, css: true; coverage v8, thresholds: lines/statements 80, branches 75, functions 70, scope: `src/utils`, `src/ui/components`, `src/store`.
-- `__tests__/setup/setupTests.ts`: jest-dom, initI18n('en'), стабы ResizeObserver/matchMedia, mock SVG.
-- `__tests__/test-utils.tsx`: `renderWithProviders` (QueryClientProvider с retry off + i18n).
-- Тесты (зеркально): `__tests__/utils/zod4Resolver.test.ts`, `__tests__/api/fetcher.test.ts`, `__tests__/config/env.test.ts`, `__tests__/store/useThemeStore.test.ts` + по тесту на каждый ui-компонент фазы 6/7 (`__tests__/ui/Button.test.tsx`, `ControlledInput.test.tsx` с RHF+zod интеграцией: невалидный сабмит → переведённая ошибка, `ModalCore.test.tsx`, Skeleton/Tooltip/Loaders/Icon — рендер-тесты).
-- Имена тестов: «what + when + expected», запросы by role/text (не testId) — правило из RN-тимплейта.
+- `vitest.config.ts`: globals, jsdom, `setupFiles: './__tests__/setup/setupTests.ts'`, css: true;
+  coverage v8, thresholds: lines/statements 80, branches 75, functions 70, scope: `src/utils`,
+  `src/ui/components`, `src/store`.
+- `__tests__/setup/setupTests.ts`: jest-dom, initI18n('en'), ResizeObserver/matchMedia stubs, mock SVG.
+- `__tests__/test-utils.tsx`: `renderWithProviders` (QueryClientProvider with retry off + i18n).
+- Tests (mirrored): `__tests__/utils/zod4Resolver.test.ts`, `__tests__/api/fetcher.test.ts`,
+  `__tests__/config/env.test.ts`, `__tests__/store/useThemeStore.test.ts` + a test for each
+  phase-6/7 ui component (`__tests__/ui/Button.test.tsx`, `ControlledInput.test.tsx` with RHF+zod
+  integration: invalid submit → translated error, `ModalCore.test.tsx`,
+  Skeleton/Tooltip/Loaders/Icon — render tests).
+- Test naming: "what + when + expected", queries by role/text (not testId) — the rule from the RN template.
 
-**Приёмка:** `pnpm test run` и `pnpm test:coverage` зелёные, пороги проходят.
+**Acceptance:** `pnpm test run` and `pnpm test:coverage` are green, thresholds pass.
 
-## Фаза 9 — Storybook 10
+## Phase 9 — Storybook 10
 
-- `pnpm dlx storybook@10.5.0 init --builder vite` затем привести конфиг: `.storybook/preview.ts` импортирует глобальные стили, `withThemeByDataAttribute({ themes: { light, dark }, defaultTheme: 'light', attributeName: 'data-theme' })` из @storybook/addon-themes.
-- Стори — в рутовой `stories/`, зеркалящей src (как `__tests__/`): `stories/ui/Button.stories.tsx` и т.д. для всех компонентов фаз 6–7. `.storybook/main.ts`: `stories: ['../stories/**/*.stories.@(ts|tsx)']`. Добавить `stories` в include tsconfig.app.json и убедиться, что lint их покрывает.
+- `pnpm dlx storybook@10.5.0 init --builder vite`, then adjust the config:
+  `.storybook/preview.ts` imports the global styles, `withThemeByDataAttribute({ themes: { light, dark }, defaultTheme: 'light', attributeName: 'data-theme' })`
+  from @storybook/addon-themes.
+- Stories — in the root `stories/`, mirroring src (like `__tests__/`): `stories/ui/Button.stories.tsx`
+  etc. for all phase 6–7 components. `.storybook/main.ts`: `stories: ['../stories/**/*.stories.@(ts|tsx)']`.
+  Add `stories` to the tsconfig.app.json include and make sure lint covers them.
 
-**Приёмка:** `pnpm storybook` поднимается, переключатель тем работает, `pnpm build-storybook` зелёный.
+**Acceptance:** `pnpm storybook` starts up, the theme switcher works, `pnpm build-storybook` is green.
 
-## Фаза 10 — документация и агентские инструменты
+## Phase 10 — documentation and agent tooling
 
-- `README.md`: стек с версиями, быстрый старт (corepack/pnpm, .env), скрипты, обзор структуры со ссылками на docs/.
-- `docs/architecture.md`: слои и направление импортов, **blocks (= widgets из FSD, ссылка на определение)**, правило повышения (page-local → blocks → ui), роутинг/лейауты.
-- `docs/conventions.md`: нейминг, **`type` предпочтительнее `interface`** (interface — только для declaration merging/аугментаций вроде Register/ImportMetaEnv); типы не инлайнятся в код-файлы — DTO в `types/`, пропсы компонентов допустимы рядом с компонентом; **правило барелей**: «барел уместен только на границе пакета (свой package.json, импорт по имени пакета — npm-библиотека или пакет монорепы), не на границе папки; в src/ приложения барелей нет — порядок импортов даёт simple-import-sort, инкапсуляцию слоёв даёт import-x/no-restricted-paths» + почему (ссылки marvinh/TkDodo/bulletproof-react), сортировка импортов, conventional commits.
-- `docs/api-layer.md`: client/api/fetcher/queryKeys-фабрика/queries-хуки, схема тостов и ошибок (meta, коды ошибок → errors.* ключи, **требование к бэку отдавать code**), заготовка refresh-флоу.
-- `docs/forms.md`: RHF + Zod 4 + zod4Resolver (почему кастомный: issue #842 + критерий миграции на официальный), Controlled-паттерн, i18n-ключи ошибок.
-- `docs/theming.md` (токены-шкалы, инверсия, как добавить токен), `docs/i18n.md` (языки, RTL, типизация ключей, satisfies-проверка локалей), `docs/modals.md` (ModalCore parent-owned + рецепт глобального менеджера на будущее: useModalStore, типизированный реестр, ModalHost), `docs/testing.md` (__tests__ зеркало, что покрываем обязательно: utils и ui/components; пороги).
-- `CLAUDE.md`: выжимка правил для агентов (слои, барели, версии-ограничения TS/ESLint, тесты, коммиты) — по образцу RN-тимплейта, кратко.
-- `.claude/skills/code-review/SKILL.md`: проектный ревью-скилл — чеклист: границы слоёв, отсутствие барелей, связанность (store/api) не в ui/, хуки со store не используются в ui-компонентах, query-паттерны (fetcher, фабрика ключей, meta-тосты), формы через Controlled+схемы, i18n-ключи вместо строк, тесты в __tests__ зеркально, **+ проверка актуальности: статус react-hook-form/resolvers#842 (миграция на официальный резолвер), поддержка ESLint 10 в eslint-plugin-react, поддержка TS 6+ в typescript-eslint**.
-- Удалить `SETUP_PLAN.md` и `SETUP_NOTES.md` (если пуст) в финальном коммите — их содержимое к этому моменту размазано по docs/.
+- `README.md`: stack with versions, quick start (corepack/pnpm, .env), scripts, a structure
+  overview linking to docs/.
+- `docs/architecture.md`: layers and import direction, **blocks (= widgets from FSD, link to the
+  definition)**, the promotion rule (page-local → blocks → ui), routing/layouts.
+- `docs/conventions.md`: naming, **`type` over `interface`** (interface — only for declaration
+  merging/augmentations like Register/ImportMetaEnv); types aren't inlined in code files — DTOs
+  in `types/`, component props may live next to the component; **the barrel rule**: "a barrel
+  makes sense only at a package boundary (its own package.json, imported by package name — an
+  npm library or a monorepo package), not at a folder boundary; there are no barrels in the app's
+  src/ — import order comes from simple-import-sort, layer encapsulation from
+  import-x/no-restricted-paths" + why (links to marvinh/TkDodo/bulletproof-react), import
+  sorting, conventional commits.
+- `docs/api-layer.md`: client/api/fetcher/queryKeys factory/queries hooks, the toast and error
+  scheme (meta, error codes → errors.* keys, **the requirement that the backend return code**),
+  the refresh flow blueprint.
+- `docs/forms.md`: RHF + Zod 4 + zod4Resolver (why custom: issue #842 + the migration criterion
+  for the official one), the Controlled pattern, i18n error keys.
+- `docs/theming.md` (scale tokens, inversion, how to add a token), `docs/i18n.md` (languages,
+  RTL, key typing, locale satisfies-check), `docs/modals.md` (ModalCore parent-owned + the recipe
+  for a future global manager: useModalStore, a typed registry, ModalHost), `docs/testing.md`
+  (__tests__ mirror, what must be covered: utils and ui/components; thresholds).
+- `CLAUDE.md`: a condensed set of rules for agents (layers, barrels, TS/ESLint version
+  constraints, tests, commits) — modeled on the RN template, kept brief.
+- `.claude/skills/code-review/SKILL.md`: a project review skill — checklist: layer boundaries,
+  no barrels, coupling (store/api) not in ui/, store-using hooks not used inside ui components,
+  query patterns (fetcher, key factory, meta toasts), forms via Controlled+schemas, i18n keys
+  instead of strings, tests mirrored in __tests__, **+ a freshness check: status of
+  react-hook-form/resolvers#842 (migration to the official resolver), ESLint 10 support in
+  eslint-plugin-react, TS 6+ support in typescript-eslint**.
+- Delete `SETUP_PLAN.md` and `SETUP_NOTES.md` (if empty) in the final commit — their content will
+  by then be spread across docs/.
 
-**Приёмка:** все ссылки в docs валидны, README-команды воспроизводимы.
+**Acceptance:** all links in docs are valid, README commands are reproducible.
 
-## Фаза 11 — финальная верификация
+## Phase 11 — final verification
 
-- Чистая установка: `rm -rf node_modules && pnpm install --frozen-lockfile`.
-- Полный прогон: build, lint, format:check, type-check, test:coverage, build-storybook.
-- Проверить хуки на живом коммите (плохое сообщение отклоняется, lint-staged срабатывает).
+- Clean install: `rm -rf node_modules && pnpm install --frozen-lockfile`.
+- Full run: build, lint, format:check, type-check, test:coverage, build-storybook.
+- Verify hooks on a live commit (a bad message is rejected, lint-staged fires).
 
 ---
 
-## Обоснования решений (для docs/, исполнителю — просто ссылки)
+## Decision rationale (for docs/, just links for the executor)
 
-- Слои/границы: bulletproof-react <https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md>; blocks = widgets из FSD <https://feature-sliced.design/docs/reference/layers>.
-- Барели: <https://tkdodo.eu/blog/please-stop-using-barrel-files>, <https://marvinh.dev/blog/speeding-up-javascript-ecosystem-part-7/>, разворот рекомендации в bulletproof-react (project-structure.md).
-- Query keys фабрика: <https://tkdodo.eu/blog/effective-react-query-keys>.
-- Глобальные тосты/ошибки: <https://tanstack.com/query/latest/docs/reference/MutationCache>, <https://tkdodo.eu/blog/react-query-error-handling>.
-- env-валидация: <https://vite.dev/guide/env-and-mode>, пример <https://github.com/alan2207/bulletproof-react/blob/master/apps/react-vite/src/config/env.ts>.
-- Кастомный zod-резолвер: <https://github.com/react-hook-form/resolvers/issues/842>.
-- Пины TS 5.9 / ESLint 9: peer deps typescript-eslint 8.63 (`typescript <6.1.0`), eslint-plugin-react 7.37.5 (`eslint ^9.7`).
+- Layers/boundaries: bulletproof-react <https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md>;
+  blocks = widgets from FSD <https://feature-sliced.design/docs/reference/layers>.
+- Barrels: <https://tkdodo.eu/blog/please-stop-using-barrel-files>,
+  <https://marvinh.dev/blog/speeding-up-javascript-ecosystem-part-7/>, the recommendation
+  reversal in bulletproof-react (project-structure.md).
+- Query keys factory: <https://tkdodo.eu/blog/effective-react-query-keys>.
+- Global toasts/errors: <https://tanstack.com/query/latest/docs/reference/MutationCache>,
+  <https://tkdodo.eu/blog/react-query-error-handling>.
+- env validation: <https://vite.dev/guide/env-and-mode>, example
+  <https://github.com/alan2207/bulletproof-react/blob/master/apps/react-vite/src/config/env.ts>.
+- Custom zod resolver: <https://github.com/react-hook-form/resolvers/issues/842>.
+- TS 5.9 / ESLint 9 pins: peer deps typescript-eslint 8.63 (`typescript <6.1.0`),
+  eslint-plugin-react 7.37.5 (`eslint ^9.7`).

@@ -1,80 +1,80 @@
-# Тесты
+# Tests
 
-Стек: `vitest` + `@testing-library/react` + `jsdom`.
+Stack: `vitest` + `@testing-library/react` + `jsdom`.
 
-## `__tests__/` зеркалит `src/`
+## `__tests__/` mirrors `src/`
 
-Тест для `src/ui/components/Button/Button.tsx` лежит в
-`__tests__/ui/components/Button/Button.test.tsx` — тот же путь, что у файла в `src/`, только с
-корнем `__tests__/` вместо `src/`. Плюс два служебных подкаталога, не имеющих пары в `src/`:
+The test for `src/ui/components/Button/Button.tsx` lives at
+`__tests__/ui/components/Button/Button.test.tsx` — the same path as the file in `src/`, only with
+`__tests__/` as the root instead of `src/`. Plus two service subdirectories with no counterpart in `src/`:
 
-- `__tests__/setup/setupTests.ts` — `setupFiles` для vitest.
+- `__tests__/setup/setupTests.ts` — `setupFiles` for vitest.
 - `__tests__/test-utils.tsx` — `renderWithProviders`.
 
-`stories/` (Storybook, `docs` не требуется — см. `.storybook/main.ts`) зеркалит `src/` по тому
-же принципу.
+`stories/` (Storybook, `docs` isn't required — see `.storybook/main.ts`) mirrors `src/` on the
+same principle.
 
-## Что покрываем обязательно
+## What we must cover
 
 `vitest.config.ts`, `coverage.include`: `src/utils/**`, `src/ui/components/**`, `src/store/**`.
-Пороги (`coverage.thresholds`): lines/statements 80, branches 75, functions 70. Это не «покрыть
-всё» — а конкретно чистые утилиты, презентационные ui-кирпичики и client-state сторы, то есть
-код без сетевых сайд-эффектов, который можно протестировать быстро и детерминированно.
-`config/env.ts` осознанно вне `coverage.include` — единственная логика в нём (`import.meta.env`)
-не изолируется от рантайма Vite без порчи модульной изоляции; вместо этого тестируется чистая
-Zod-схема `schemas/env.ts` (`__tests__/schemas/env.test.ts`), которая содержит всю проверяемую
-логику.
+Thresholds (`coverage.thresholds`): lines/statements 80, branches 75, functions 70. This isn't
+"cover everything" — it's specifically pure utilities, presentational UI building blocks, and
+client-state stores, i.e. code with no network side effects that can be tested quickly and
+deterministically. `config/env.ts` is deliberately outside `coverage.include` — its only logic
+(`import.meta.env`) can't be isolated from the Vite runtime without breaking module isolation;
+instead the pure Zod schema `schemas/env.ts` is tested (`__tests__/schemas/env.test.ts`), which
+holds all the testable logic.
 
-Остальные слои (`api/queries/*`, `blocks/*`, `pages/*`) тестами не покрываются в шаблоне — это
-интеграционные/сетевые сценарии, тестовый подход для них закладывается по задачам конкретной
-команды.
+The remaining layers (`api/queries/*`, `blocks/*`, `pages/*`) aren't covered by tests in the
+template — these are integration/network scenarios, and the testing approach for them is up to
+the specific team's future work.
 
-## Имена тестов и запросы
+## Test names and queries
 
-- Имя теста — «what + when + expected»: `'shows the translated validation error under each field
-  when submitting an empty form'`, не `'test 1'`/`'renders correctly'`.
-- Запросы — `screen.getByRole`/`getByText`/`getByPlaceholderText` и т.п., **не** `data-testid`.
-  `data-testid="icon-svg"` в `ui/icons/Icon.tsx` — единственное исключение (SVG-иконки не имеют
-  подходящей роли/текста для запроса).
+- Test name is "what + when + expected": `'shows the translated validation error under each field
+  when submitting an empty form'`, not `'test 1'`/`'renders correctly'`.
+- Queries — `screen.getByRole`/`getByText`/`getByPlaceholderText` etc., **not** `data-testid`.
+  `data-testid="icon-svg"` in `ui/icons/Icon.tsx` is the one exception (SVG icons have no
+  suitable role/text to query by).
 
 ## `renderWithProviders`
 
-`__tests__/test-utils.tsx` оборачивает `render` в `QueryClientProvider` (с `retry: false` и на
-queries, и на mutations — тесты не должны ждать реальных ретраев). i18n не требует провайдера —
-дефолтный экземпляр `i18next` инициализируется как side-effect импорта `~/i18n/index` в
-`setupTests.ts`, `useTranslation()` читает из него напрямую.
+`__tests__/test-utils.tsx` wraps `render` in a `QueryClientProvider` (with `retry: false` for
+both queries and mutations — tests shouldn't wait for real retries). i18n needs no provider —
+the default `i18next` instance is initialized as a side effect of importing `~/i18n/index` in
+`setupTests.ts`, and `useTranslation()` reads from it directly.
 
-## Нюанс: `vite-plugin-svgr` и vitest
+## Nuance: `vite-plugin-svgr` and vitest
 
-`vite.config.ts` транслирует **любой** импорт `**/*.svg` в React-компонент через `vite-plugin-svgr`
-(`exportType: 'default'`, без суффикса `?react` — см. `docs/theming.md`/`src/ui/icons/types.ts`).
-Suffix-based `?react` импорт (`import Chevron from './chevron.svg?react'`), который часто
-встречается в примерах `vite-plugin-svgr`, **не работает под vitest**: импорт с этим суффиксом
-резолвится в data-URI строку (дефолтное поведение `vite/client` для ассетов), а не в компонент,
-хотя тот же файл в `vite build` транслируется корректно — сам суффикс не подключает трансформ
-плагина под vitest. Обходной путь через `resolve.alias`/`test.alias` (regex на `\.svg\?react$`)
-тоже не сработал — алиас не матчился вообще.
+`vite.config.ts` transforms **any** `**/*.svg` import into a React component via
+`vite-plugin-svgr` (`exportType: 'default'`, no `?react` suffix — see `docs/theming.md`/
+`src/ui/icons/types.ts`). The suffix-based `?react` import (`import Chevron from './chevron.svg?react'`),
+common in `vite-plugin-svgr` examples, **doesn't work under vitest**: an import with that suffix
+resolves to a data-URI string (the default `vite/client` behavior for assets), not a component,
+even though the same file transforms correctly under `vite build` — the suffix itself doesn't
+trigger the plugin's transform under vitest. A workaround via `resolve.alias`/`test.alias`
+(a regex on `\.svg\?react$`) didn't work either — the alias didn't match at all.
 
-**Решение, применённое в шаблоне:** иконки импортируются без суффикса
-(`~/ui/icons/svg/chevron.svg`, не `chevron.svg?react`), а `vitest.config.ts` подключает **тот же**
-`vite-plugin-svgr` с идентичным конфигом, что и `vite.config.ts` (`include: '**/*.svg'`). Тогда
-трансформ применяется одинаково и в dev/build, и в vitest — иконки в тестах рендерятся по-настоящему,
-без отдельного SVG-мока. При добавлении новой конфигурации, где участвует Vite (Storybook —
-`.storybook/main.ts`, см. `docs/architecture.md` про Storybook), это правило то же самое: framework
-Storybook (`@storybook/react-vite`) **не читает** `vite.config.ts` автоматически — svgr-плагин
-нужно явно повторить в `viteFinal` (или в любом другом отдельном Vite-пайплайне).
+**Solution used in the template:** icons are imported without a suffix
+(`~/ui/icons/svg/chevron.svg`, not `chevron.svg?react`), and `vitest.config.ts` loads the **same**
+`vite-plugin-svgr` with an identical config to `vite.config.ts` (`include: '**/*.svg'`). Then
+the transform applies the same way in dev/build and in vitest — icons render for real in tests,
+with no separate SVG mock. When adding a new Vite-based config (Storybook —
+`.storybook/main.ts`, see `docs/architecture.md` about Storybook), the same rule applies: the
+Storybook framework (`@storybook/react-vite`) **doesn't read** `vite.config.ts` automatically —
+the svgr plugin needs to be explicitly repeated in `viteFinal` (or in any other separate Vite pipeline).
 
-## Нюанс: полностью покрытые файлы не показаны в таблице `pnpm test:coverage`
+## Nuance: fully-covered files aren't shown in the `pnpm test:coverage` table
 
-`@vitest/coverage-v8` включает `skipFull: true` в текстовом репортере по умолчанию, когда
-определяет CI/агентское окружение — файлы с 100% по statements/branches/functions выпадают из
-печатаемой таблицы (это не значит, что они не инструментированы: полный список — в
-`coverage/coverage-final.json`). Итоговые проценты и пороги считаются по полному набору файлов
-независимо от того, что попало в таблицу — если после изменений какой-то файл «пропал» из вывода
-`pnpm test:coverage`, это не регрессия покрытия, а именно этот случай.
+`@vitest/coverage-v8` enables `skipFull: true` in the default text reporter when it detects a
+CI/agent environment — files with 100% statements/branches/functions coverage drop out of the
+printed table (this doesn't mean they aren't instrumented: the full list is in
+`coverage/coverage-final.json`). Final percentages and thresholds are computed against the full
+set of files regardless of what shows up in the table — if a file "disappears" from
+`pnpm test:coverage` output after some change, that's not a coverage regression, just this case.
 
-## Команды
+## Commands
 
-- `pnpm test` — watch-режим.
-- `pnpm test run` — один прогон, использовать в CI/pre-push.
-- `pnpm test:coverage` — прогон с отчётом покрытия и порогами.
+- `pnpm test` — watch mode.
+- `pnpm test run` — a single run, use in CI/pre-push.
+- `pnpm test:coverage` — a run with a coverage report and thresholds.

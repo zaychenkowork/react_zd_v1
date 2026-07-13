@@ -1,90 +1,90 @@
 ---
 name: code-review
-description: Проектный чек-лист ревью для react_zd_v1 (слои, барели, query-паттерны, формы,
-  i18n, тесты) + проверка актуальности версийных ограничений. Использовать при ревью PR/диффа
-  в этом репозитории — до или вместо общего /code-review.
+description: Project-specific review checklist for react_zd_v1 (layers, barrels, query patterns,
+  forms, i18n, tests) + a freshness check for version constraints. Use when reviewing a PR/diff
+  in this repository — before or instead of the general /code-review.
 ---
 
 # Code review — react_zd_v1
 
-Чек-лист специфичен для этого шаблона; общие вопросы стиля/безопасности вне него — через
-обычный `/code-review`. Основания каждого пункта — в `docs/`.
+This checklist is specific to this template; general style/security questions outside of it go
+through the regular `/code-review`. The rationale for each item is in `docs/`.
 
-## Границы слоёв (docs/architecture.md)
+## Layer boundaries (docs/architecture.md)
 
-- [ ] Направление импортов не нарушено: `app → pages → blocks → api → store → ui → {i18n, schemas, utils, types, config, constants}`.
-- [ ] `ui/**` не импортирует `api`, `store`, `blocks`, `pages`, `app` (только пропсы).
-- [ ] `hooks/**` не импортирует `api`, `blocks`, `pages`, `app`.
-- [ ] `pnpm lint` зелёный — `import-x/no-restricted-paths` уже проверяет всё это механически;
-      ручная проверка нужна только если диф трогает `eslint.config.js`.
+- [ ] Import direction is not violated: `app → pages → blocks → api → store → ui → {i18n, schemas, utils, types, config, constants}`.
+- [ ] `ui/**` does not import `api`, `store`, `blocks`, `pages`, `app` (props only).
+- [ ] `hooks/**` does not import `api`, `blocks`, `pages`, `app`.
+- [ ] `pnpm lint` is green — `import-x/no-restricted-paths` already checks all of this
+      mechanically; a manual check is only needed if the diff touches `eslint.config.js`.
 
-## Барели (docs/conventions.md)
+## Barrels (docs/conventions.md)
 
-- [ ] Нет новых `index.ts` с реэкспортами в `src/`, `__tests__/`, `stories/`.
-- [ ] Импорты — прямым путём до файла через `~/`, не bare-импорт слоя.
+- [ ] No new `index.ts` with re-exports in `src/`, `__tests__/`, `stories/`.
+- [ ] Imports go by direct path to the file via `~/`, not a bare layer import.
 
-## Связанность (docs/architecture.md)
+## Coupling (docs/architecture.md)
 
-- [ ] Новый компонент, читающий `store`/`api`, лежит в `pages/<Page>/components/` (один
-      потребитель) или `blocks/` (несколько), а не в `ui/`.
-- [ ] Хук, использующий store (`useTheme`-подобный), не импортируется внутри `ui/components/**`
-      (линтер это не ловит — только ревью).
+- [ ] A new component reading `store`/`api` lives in `pages/<Page>/components/` (single
+      consumer) or `blocks/` (multiple), not in `ui/`.
+- [ ] A hook using the store (`useTheme`-like) is not imported inside `ui/components/**`
+      (the linter doesn't catch this — review only).
 
-## Query-паттерны (docs/api-layer.md)
+## Query patterns (docs/api-layer.md)
 
-- [ ] Новый эндпоинт — метод в `api/api.ts`, не прямой вызов `axios`/`apiClient` из компонента.
-- [ ] Query-ключи — через фабрику в `api/queryKeys.ts`, не строковый литерал в компоненте.
-- [ ] `queryFn`/`mutationFn` оборачивает вызов `api.*` в `fetcher(...)`.
-- [ ] Тосты — только через `meta.errorToast`/`meta.successToast`/`meta.invalidates`, не
-      локальный `onError`/`onSuccess` с `toast.*` в компоненте.
-- [ ] DTO — в `types/api.ts` (или `types/<domain>.ts`), не инлайн в файле хука.
+- [ ] A new endpoint is a method in `api/api.ts`, not a direct `axios`/`apiClient` call from a component.
+- [ ] Query keys go through the factory in `api/queryKeys.ts`, not a string literal in a component.
+- [ ] `queryFn`/`mutationFn` wraps the `api.*` call in `fetcher(...)`.
+- [ ] Toasts — only via `meta.errorToast`/`meta.successToast`/`meta.invalidates`, not a
+      local `onError`/`onSuccess` with `toast.*` in a component.
+- [ ] DTOs — in `types/api.ts` (or `types/<domain>.ts`), not inlined in the hook file.
 
-## Формы (docs/forms.md)
+## Forms (docs/forms.md)
 
-- [ ] Поле формы — `ControlledInput` (или аналогичная Controlled-обёртка), не сырой `<input>`
-      с ручным `useState`.
-- [ ] Ошибки схемы — i18n-ключи (`'required'`, не `'This field is required'`).
-- [ ] Резолвер — `~/utils/zod4Resolver`, не `@hookform/resolvers` (см. проверку актуальности
-      ниже).
+- [ ] A form field is a `ControlledInput` (or a similar Controlled wrapper), not a raw `<input>`
+      with manual `useState`.
+- [ ] Schema errors are i18n keys (`'required'`, not `'This field is required'`).
+- [ ] The resolver is `~/utils/zod4Resolver`, not `@hookform/resolvers` (see the freshness
+      check below).
 
 ## i18n (docs/i18n.md)
 
-- [ ] Нет хардкод-строк, видимых пользователю, — только `t('namespace.key')`.
-- [ ] Новый ключ добавлен во все локали (`en`/`uk`/`ar`) — `satisfies Translation` в
-      `i18n/resources.ts` должен упасть при рассинхроне, но проверить, что диф действительно
-      правит все три файла, а не только `en`.
-- [ ] Название языка в UI — эндоним (`constants/languages.ts`), не перевод.
+- [ ] No hardcoded user-facing strings — only `t('namespace.key')`.
+- [ ] A new key is added to all locales (`en`/`uk`/`ar`) — `satisfies Translation` in
+      `i18n/resources.ts` should fail on a mismatch, but verify the diff actually
+      touches all three files, not just `en`.
+- [ ] The language name in the UI is an endonym (`constants/languages.ts`), not a translation.
 
-## Тесты (docs/testing.md)
+## Tests (docs/testing.md)
 
-- [ ] Новый файл в `src/utils/`, `src/ui/components/`, `src/store/` — есть тест в `__tests__/`
-      по тому же пути.
-- [ ] Имя теста — «what + when + expected», запросы — `getByRole`/`getByText`, не `data-testid`.
-- [ ] `pnpm test:coverage` не проваливает пороги (lines/statements 80, branches 75, functions 70).
+- [ ] A new file in `src/utils/`, `src/ui/components/`, `src/store/` has a matching test in
+      `__tests__/` at the same path.
+- [ ] Test name is "what + when + expected"; queries are `getByRole`/`getByText`, not `data-testid`.
+- [ ] `pnpm test:coverage` doesn't fail the thresholds (lines/statements 80, branches 75, functions 70).
 
 ## Storybook
 
-- [ ] Новый компонент в `ui/components/` — стори в `stories/` по тому же пути
+- [ ] A new component in `ui/components/` has a story in `stories/` at the same path
       (`stories/ui/components/<Name>/<Name>.stories.tsx`).
 
-## Проверка актуальности версийных ограничений
+## Freshness check for version constraints
 
-Версии в `package.json` пинятся под конкретные peer-ограничения — они могут устареть. Проверять
-при любом ревью, где диф трогает эти зависимости, либо периодически:
+Versions in `package.json` are pinned to specific peer constraints — they can go stale. Check
+whenever a review's diff touches these dependencies, or periodically:
 
-1. **`react-hook-form/resolvers#842`** (причина кастомного `zod4Resolver`, см. `docs/forms.md`):
+1. **`react-hook-form/resolvers#842`** (reason for the custom `zod4Resolver`, see `docs/forms.md`):
    `curl -s https://api.github.com/repos/react-hook-form/resolvers/issues/842 | grep '"state"'`
-   (или `gh api repos/react-hook-form/resolvers/issues/842 --jq .state`, если установлен `gh`).
-   Если `"closed"` — проверить, вышла ли версия `@hookform/resolvers` с поддержкой Zod 4
-   (`npm view @hookform/resolvers versions peerDependencies --json`), и если да — завести задачу
-   на миграцию (сама миграция — см. критерий в `docs/forms.md`).
-2. **ESLint 10 в `eslint-plugin-react`** (сейчас пин `eslint@9.x`, `docs/conventions.md`/
-   `CLAUDE.md`): `npm view eslint-plugin-react peerDependencies` — искать диапазон `eslint`.
-   Если верхняя граница расширилась до `^10`, апгрейд ESLint возможен.
-3. **TS 6+ в `typescript-eslint`** (сейчас пин `typescript@5.9.x`): `npm view typescript-eslint peerDependencies`
-   — искать диапазон `typescript`. Если нижняя/верхняя граница включает `6.x`/`7.x`, апгрейд
-   TypeScript возможен (проверить также `@vitejs/plugin-react`, `vite-tsconfig-paths` на
-   совместимость).
+   (or `gh api repos/react-hook-form/resolvers/issues/842 --jq .state` if `gh` is installed).
+   If `"closed"` — check whether a version of `@hookform/resolvers` with Zod 4 support has
+   shipped (`npm view @hookform/resolvers versions peerDependencies --json`), and if so, file a
+   migration task (for the migration itself see the criterion in `docs/forms.md`).
+2. **ESLint 10 in `eslint-plugin-react`** (currently pinned to `eslint@9.x`, `docs/conventions.md`/
+   `CLAUDE.md`): `npm view eslint-plugin-react peerDependencies` — look for the `eslint` range.
+   If the upper bound has widened to `^10`, an ESLint upgrade becomes possible.
+3. **TS 6+ in `typescript-eslint`** (currently pinned to `typescript@5.9.x`): `npm view typescript-eslint peerDependencies`
+   — look for the `typescript` range. If the lower/upper bound includes `6.x`/`7.x`, a
+   TypeScript upgrade becomes possible (also check `@vitejs/plugin-react`, `vite-tsconfig-paths`
+   for compatibility).
 
-Если `gh`/`npm` недоступны в среде ревью — команды выше можно выполнить через `WebFetch`/браузер
-(GitHub issue page, npmjs.com/package/<pkg>).
+If `gh`/`npm` are unavailable in the review environment — the commands above can be run through
+`WebFetch`/a browser (GitHub issue page, npmjs.com/package/<pkg>).

@@ -1,214 +1,236 @@
 # SETUP_NOTES
 
-> **Статус: сетап завершён.** Первоисточник находок для аудита; актуальные из них уже перенесены
-> в рабочую документацию — `docs/testing.md` (SVGR/vitest, coverage `skipFull`), `README.md`
-> (Troubleshooting — PATH-префикс pnpm/node, `ERR_PNPM_IGNORED_BUILDS`), `docs/conventions.md`
-> (резолвер путей для `import-x/no-restricted-paths`, директивы `sonarjs`), `docs/i18n.md`
-> (`~/i18n/index` вместо bare `~/i18n`).
+> **Status: setup complete.** The original source of findings for the audit; the currently
+> relevant ones have already been carried into the working documentation — `docs/testing.md`
+> (SVGR/vitest, coverage `skipFull`), `README.md` (Troubleshooting — the pnpm/node PATH prefix,
+> `ERR_PNPM_IGNORED_BUILDS`), `docs/conventions.md` (the path resolver for
+> `import-x/no-restricted-paths`, `sonarjs` directives), `docs/i18n.md` (`~/i18n/index` instead
+> of bare `~/i18n`).
 
-Отклонения от SETUP_PLAN.md, зафиксированные по правилу 5 (не импровизировать — записать и продолжить).
+Deviations from SETUP_PLAN.md, recorded per rule 5 (don't improvise — record and continue).
 
-## Фаза 0
+## Phase 0
 
-### 1. `pnpm` CLI требует Node >= 22.13, .nvmrc проекта — 20.19.1
+### 1. The `pnpm` CLI requires Node >= 22.13, the project's `.nvmrc` is 20.19.1
 
-`corepack prepare pnpm@11.12.0 --activate` под активным Node 20.19.1 (текущая версия из `.nvmrc`,
-`nvm ls` показывает её как единственную LTS-версию рядом с более новыми) падает:
+`corepack prepare pnpm@11.12.0 --activate` under the active Node 20.19.1 (the current version
+from `.nvmrc`, `nvm ls` shows it as the only LTS version alongside newer ones) fails:
 
 ```
 warn: This version of pnpm requires at least Node.js v22.13
 Error [ERR_UNKNOWN_BUILTIN_MODULE]: No such built-in module: node:sqlite
 ```
 
-Причина — сам бинарник pnpm 11.x использует `node:sqlite`, доступный только в Node >= 22.13, независимо
-от того, какой Node таргетит приложение (`engines.node`, `.nvmrc`). Версия pnpm в плане (11.12.0) зафиксирована
-и не меняется. Фолбэк из плана (`npm i -g pnpm@11.12.0`) не решает проблему — установленный тем же способом
-пакет всё равно исполняется активным Node и упадёт так же.
+The cause — the pnpm 11.x binary itself uses `node:sqlite`, available only in Node >= 22.13,
+regardless of which Node the application targets (`engines.node`, `.nvmrc`). The pnpm version in
+the plan (11.12.0) is pinned and doesn't change. The plan's fallback (`npm i -g pnpm@11.12.0`)
+doesn't solve the problem — a package installed the same way still runs under the active Node
+and fails the same way.
 
-**Решение (не меняет версии плана, только окружение исполнения CLI):** пакетный менеджер pnpm запускается
-под Node v24.13.1 (уже установлен через nvm на машине), а зависимости/скрипты приложения по-прежнему
-ориентированы на Node из `.nvmrc` (20.19.1) — эти две версии Node независимы: одна выполняет сам pnpm,
-другая — рантайм приложения. Важно: `nvm use v24.13.1` в этом окружении триггерит автоматическую
-синхронизацию `.nvmrc`/`package.json#engines.node` с активной версией Node (сторонний хук в этой машине/окружении,
-не часть плана) — после `nvm use` оба файла оказывались перезаписаны на `24.13.1` / `>=22.13.0`. Поэтому вместо
-`nvm use` использовался прямой префикс `PATH`, который не триггерит хук:
-`export PATH="/Users/zeddz/.nvm/versions/node/v24.13.1/bin:$PATH" && pnpm ...` — так активная версия Node для
-самого процесса pnpm меняется, а `.nvmrc`/`engines` проекта остаются `20.19.1` / `>=20.19.0`, как требует план.
-Требует внимания при воспроизведении на CI/других машинах: нужен доступный Node >= 22.13 для запуска pnpm
-(даже если проект таргетит Node 20), и по возможности не вызывать `nvm use` внутри репозитория — только
-подстановку PATH или отдельный шелл вне директории проекта.
+**Solution (doesn't change the plan's versions, only the CLI's execution environment):** the
+pnpm package manager runs under Node v24.13.1 (already installed via nvm on the machine), while
+the app's dependencies/scripts still target the Node from `.nvmrc` (20.19.1) — these two Node
+versions are independent: one runs pnpm itself, the other is the app runtime. Important:
+`nvm use v24.13.1` in this environment triggers an automatic sync of `.nvmrc`/`package.json#engines.node`
+to the active Node version (a third-party hook on this machine/environment, not part of the
+plan) — after `nvm use`, both files ended up overwritten to `24.13.1` / `>=22.13.0`. So instead
+of `nvm use`, a direct `PATH` prefix was used, which doesn't trigger the hook:
+`export PATH="/Users/zeddz/.nvm/versions/node/v24.13.1/bin:$PATH" && pnpm ...` — this changes
+the active Node version for the pnpm process itself, while the project's `.nvmrc`/`engines`
+remain `20.19.1` / `>=20.19.0`, as the plan requires. This needs attention when reproducing on
+CI/other machines: a Node >= 22.13 must be available to run pnpm (even if the project targets
+Node 20), and where possible avoid calling `nvm use` inside the repository — only a PATH
+substitution or a separate shell outside the project directory.
 
-### 2. Скрипт `prepare: husky` из списка фазы 0 ломает `pnpm install` до фазы 2
+### 2. The `prepare: husky` script from the phase-0 list breaks `pnpm install` before phase 2
 
-План перечисляет `prepare` (husky) в списке скриптов фазы 0, но husky как пакет устанавливается только в
-фазе 2. Если добавить `"prepare": "husky"` в `package.json` уже в фазе 0, `pnpm install` (приёмка фазы 0)
-завершается с ошибкой `sh: husky: command not found` (exit code 1), потому что pnpm выполняет lifecycle-скрипт
-`prepare` сразу после install, а бинарника husky ещё нет.
+The plan lists `prepare` (husky) among phase 0's scripts, but husky as a package is only
+installed in phase 2. If `"prepare": "husky"` is added to `package.json` already in phase 0,
+`pnpm install` (phase 0's acceptance check) fails with `sh: husky: command not found`
+(exit code 1), because pnpm runs the `prepare` lifecycle script right after install, and the
+husky binary doesn't exist yet.
 
-**Решение:** скрипт `"prepare": "husky"` добавлен в `package.json` в фазе 2, в момент когда husky фактически
-установлен и настраивается (естественный порядок из официального flow husky v9: install → add prepare script →
-init hooks). В фазе 0 остальные скрипты из списка добавлены как есть; `prepare` временно отсутствует.
+**Solution:** the `"prepare": "husky"` script is added to `package.json` in phase 2, at the point
+where husky is actually installed and configured (the natural order from husky v9's official
+flow: install → add prepare script → init hooks). In phase 0, the rest of the listed scripts are
+added as-is; `prepare` is temporarily absent.
 
-## Фаза 2
+## Phase 2
 
-### 3. `import-x/no-restricted-paths` не резолвит алиас `~/*` без отдельного TS-резолвера
+### 3. `import-x/no-restricted-paths` doesn't resolve the `~/*` alias without a separate TS resolver
 
-Таблица версий плана не содержит пакет для резолва TypeScript path-алиасов в ESLint (`eslint-import-resolver-typescript`
-или аналог). Без него `import-x/no-restricted-paths` не срабатывает вообще: правило внутри себя вызывает
-`resolve(importPath, context)`, и без настроенного резолвера алиас `~/api/client` не резолвится в абсолютный путь —
-правило тихо возвращается без репорта, независимо от того, существует ли целевой файл на диске. Проверено эмпирически:
-с дефолтным резолвером (только `eslint-plugin-import-x`, без доп. пакета) подставной импорт `~/api/client` из
-`src/ui/_boundary-probe.ts` НЕ ловился; `pnpm lint` завершался с exit 0.
+The plan's version table doesn't include a package for resolving TypeScript path aliases in
+ESLint (`eslint-import-resolver-typescript` or an equivalent). Without it,
+`import-x/no-restricted-paths` doesn't fire at all: the rule internally calls
+`resolve(importPath, context)`, and without a configured resolver the `~/api/client` alias
+doesn't resolve to an absolute path — the rule silently returns with no report, regardless of
+whether the target file exists on disk. Verified empirically: with the default resolver (only
+`eslint-plugin-import-x`, no extra package), a planted import `~/api/client` from
+`src/ui/_boundary-probe.ts` was NOT caught; `pnpm lint` exited 0.
 
-**Решение:** добавлен `eslint-import-resolver-typescript` (актуальная версия на момент установки — `4.4.5`,
-peer deps `eslint: '*'`, `eslint-plugin-import-x: '*'` — конфликтов с зафиксированными в плане версиями нет)
-как devDependency, отсутствующая в таблице плана. Настроен через `settings['import-x/resolver-next']:
-[createTypeScriptImportResolver(), createNodeResolver()]` в `eslint.config.js`. После этого зональная проверка
-подтверждена дважды:
-- подставной импорт `import '~/api/client'` из `src/ui/_boundary-probe.ts` → `import-x/no-restricted-paths`
-  ловит нарушение зоны `ui/`;
-- подставной импорт `import '~/api'` (без пути до файла) из того же файла → core-правило `no-restricted-imports`
-  ловит попытку импортировать слой целиком (защита от барелей).
+**Solution:** added `eslint-import-resolver-typescript` (the current version at install time —
+`4.4.5`, peer deps `eslint: '*'`, `eslint-plugin-import-x: '*'` — no conflicts with the versions
+pinned in the plan) as a devDependency, missing from the plan's table. Configured via
+`settings['import-x/resolver-next']: [createTypeScriptImportResolver(), createNodeResolver()]`
+in `eslint.config.js`. After that, the zone check was confirmed twice:
+- a planted import `import '~/api/client'` from `src/ui/_boundary-probe.ts` →
+  `import-x/no-restricted-paths` catches the `ui/` zone violation;
+- a planted import `import '~/api'` (no path to a file) from the same file → the core rule
+  `no-restricted-imports` catches the attempt to import a whole layer (barrel guard).
 
-Оба пробных файла (`src/ui/_boundary-probe.ts` и временный `src/api/client.ts`, созданный только для того, чтобы
-резолвер нашёл реальный файл под `~/api/`) удалены после проверки; `pnpm lint` снова зелёный.
+Both probe files (`src/ui/_boundary-probe.ts` and a temporary `src/api/client.ts`, created just
+so the resolver could find a real file under `~/api/`) were removed after verification; `pnpm lint`
+is green again.
 
-## Фаза 4
+## Phase 4
 
-### 4. `no-restricted-imports` запрещает и bare-импорт `~/i18n`, хотя `i18n/index.ts` — не барел, а точка входа с side-effect-инициализацией
+### 4. `no-restricted-imports` also bans the bare import `~/i18n`, even though `i18n/index.ts` isn't a barrel but an entry point with side-effect initialization
 
-Правило `no-restricted-imports.paths`, добавленное в фазе 2 против барелей, матчит литеральный
-specifier импорта независимо от того, есть ли у файла именованные реэкспорты. `i18n/index.ts` (план,
-раздел «Фаза 4») — это модуль, вызывающий `i18n.init()` как side effect при импорте, а не барел с
-реэкспортами; тем не менее любой `import '~/i18n'` (в т.ч. side-effect-импорт без байндингов) ловится тем же
-правилом, что и `import '~/api'`.
+The `no-restricted-imports.paths` rule, added in phase 2 against barrels, matches the literal
+import specifier regardless of whether the file has named re-exports. `i18n/index.ts` (plan,
+"Phase 4" section) is a module that calls `i18n.init()` as a side effect on import, not a barrel
+with re-exports; nevertheless, any `import '~/i18n'` (including a side-effect import with no
+bindings) is caught by the same rule as `import '~/api'`.
 
-**Решение (без изменения правила фазы 2):** во всех местах, где нужен именно side-effect-импорт модуля
-инициализации (`src/app/main.tsx`, `src/app/providers/QueryProvider.tsx`), используется явный путь до файла
-`~/i18n/index` вместо `~/i18n` — литерал не совпадает с записью в `no-restricted-imports.paths`, поэтому линт
-пропускает, а `moduleResolution: bundler` резолвит `~/i18n/index` в тот же файл. Функция `isSupportedLanguage`
-(нужна за пределами i18n/index.ts, в `hooks/useLanguage.ts`) перенесена в `i18n/resources.ts` — так
-потребителям не нужен bare-импорт `~/i18n` вообще, только `~/i18n/resources`.
+**Solution (without changing the phase-2 rule):** everywhere a side-effect import of the
+initialization module is specifically needed (`src/app/main.tsx`,
+`src/app/providers/QueryProvider.tsx`), the explicit file path `~/i18n/index` is used instead of
+`~/i18n` — the literal doesn't match the entry in `no-restricted-imports.paths`, so lint passes,
+and `moduleResolution: bundler` resolves `~/i18n/index` to the same file. The
+`isSupportedLanguage` function (needed outside i18n/index.ts, in `hooks/useLanguage.ts`) was
+moved to `i18n/resources.ts` — so consumers never need a bare `~/i18n` import at all, only `~/i18n/resources`.
 
-### 5. `sonarjs/recommended` (фаза 2) конфликтует с TODO-комментариями, явно требуемыми планом фазы 4
+### 5. `sonarjs/recommended` (phase 2) conflicts with TODO comments explicitly required by the phase-4 plan
 
-Правило `sonarjs/todo-tag` (часть `sonarjs.configs.recommended`, подключённого в фазе 2) помечает любой
-комментарий с `TODO` как ошибку линта. План фазы 4 прямо требует TODO-комментарии в нескольких местах
-(`api/client.ts` — заглушка refresh-эндпоинта; `store/useAuthStore.ts` — временное хранение refresh-токена
-в localStorage). Полное отключение правила не делалось (не входит в список смягчений плана фазы 2).
+The `sonarjs/todo-tag` rule (part of `sonarjs.configs.recommended`, enabled in phase 2) flags any
+comment containing `TODO` as a lint error. The phase-4 plan explicitly requires TODO comments in
+several places (`api/client.ts` — the refresh-endpoint stub; `store/useAuthStore.ts` — the
+temporary storage of the refresh token in localStorage). The rule wasn't fully disabled (it's not
+in the list of deliberate phase-2 relaxations). Instead:
 
-**Решение:** точечный `// eslint-disable-next-line sonarjs/todo-tag -- <причина>` непосредственно перед
-строкой, содержащей слово TODO, в обоих файлах. Комментарии переведены из `/** JSDoc */` в последовательность
-`//`, потому что `eslint-disable-next-line` отключает правило только для непосредственно следующей строки, а
-не для всего блочного комментария — если TODO находится не на первой строке `/** ... */`, директива не
-попадает на нужную строку.
+**Solution:** a targeted `// eslint-disable-next-line sonarjs/todo-tag -- <reason>` right before
+the line containing the word TODO, in both files. The comments were converted from `/** JSDoc */`
+into a sequence of `//` lines, because `eslint-disable-next-line` only disables the rule for the
+immediately following line, not for the whole block comment — if TODO isn't on the first line of
+a `/** ... */` block, the directive doesn't land on the right line.
 
-### 6. `sonarjs/void-use` запрещает `void` для явно игнорируемых промисов
+### 6. `sonarjs/void-use` bans `void` for deliberately ignored promises
 
-В нескольких местах (`i18n/index.ts` — `i18n.use().init()`, `hooks/useLanguage.ts` — `i18n.changeLanguage()`,
-`app/providers/QueryProvider.tsx` — `invalidateQueries()`) стоял `void` перед вызовом, возвращающим промис,
-который сознательно не ожидается (fire-and-forget). Правило `sonarjs/void-use` (тоже часть recommended-конфига
-фазы 2) запрещает оператор `void` вообще. Поскольку в конфиге фазы 2 НЕТ
-`@typescript-eslint/no-floating-promises` (он только в typed/strict пресетах, не в использованном
-`tseslint.configs.recommended`), маркировать промис через `void` не требуется никаким другим правилом.
+In several places (`i18n/index.ts` — `i18n.use().init()`, `hooks/useLanguage.ts` —
+`i18n.changeLanguage()`, `app/providers/QueryProvider.tsx` — `invalidateQueries()`) there was a
+`void` before a promise-returning call that's deliberately not awaited (fire-and-forget). The
+`sonarjs/void-use` rule (also part of the phase-2 recommended config) bans the `void` operator
+entirely. Since the phase-2 config does NOT include `@typescript-eslint/no-floating-promises`
+(it's only in the typed/strict presets, not the `tseslint.configs.recommended` used here),
+marking the promise with `void` isn't required by any other rule either.
 
-**Решение:** `void` убран, вызовы оставлены как обычные statement-выражения без await/void — поведение не
-меняется (промис по-прежнему не ожидается), линт зелёный.
+**Solution:** `void` was removed, the calls were left as plain statement expressions with no
+await/void — behavior doesn't change (the promise is still not awaited), lint is green.
 
-## Фаза 6
+## Phase 6
 
-### 7. Иконки: `vite-plugin-svgr/client`-типы объявляют только `*.svg?react`, а не `*.svg`
+### 7. Icons: `vite-plugin-svgr/client` types only declare `*.svg?react`, not `*.svg`
 
-Фаза 1 зафиксировала типы `*.svg?react` (см. запись плана), но `vite.config.ts`'s svgr-плагин настроен с
-`include: '**/*.svg'` и `exportType: 'default'` — он трансформирует в React-компонент ЛЮБОЙ импорт `.svg`,
-независимо от суффикса `?react`. Импорт иконок с суффиксом (`import Chevron from './svg/chevron.svg?react'`)
-типизируется корректно (по `vite-plugin-svgr/client`), но без суффикса TS резолвит импорт как `string` (URL) по
-дефолтным типам `vite/client`, хотя раннтайм в обоих случаях отрабатывает одинаково (плагин видит `**/*.svg`).
+Phase 1 pinned the `*.svg?react` types (see the plan entry), but `vite.config.ts`'s svgr plugin
+is configured with `include: '**/*.svg'` and `exportType: 'default'` — it transforms ANY `.svg`
+import into a React component, regardless of the `?react` suffix. Importing an icon with the
+suffix (`import Chevron from './svg/chevron.svg?react'`) types correctly (via
+`vite-plugin-svgr/client`), but without the suffix TS resolves the import as `string` (a URL)
+per the default `vite/client` types, even though the runtime behaves the same in both cases (the
+plugin sees `**/*.svg`).
 
-**Решение:** импорт иконок сделан через алиас `~/ui/icons/svg/*.svg` (не относительный `./svg/*.svg`) +
-точечная аугментация в `src/vite-env.d.ts`: `declare module '~/ui/icons/svg/*.svg'` типизирует именно эти файлы
-как `FC<SVGProps<SVGSVGElement>>`, перекрывая более общее `*.svg` из `vite/client` (TS выбирает самый
-специфичный совпадающий wildcard-паттерн). Референс `vite-plugin-svgr/client` из `vite-env.d.ts` убран — он
-объявляет только `*.svg?react`, которым мы не пользуемся. Суффикс `?react` не используется вовсе (см. также
-пункт 8 — под vitest он давал другую, более серьёзную проблему).
+**Solution:** icon imports go through the `~/ui/icons/svg/*.svg` alias (not the relative
+`./svg/*.svg`) + a targeted augmentation in `src/vite-env.d.ts`: `declare module '~/ui/icons/svg/*.svg'`
+types exactly these files as `FC<SVGProps<SVGSVGElement>>`, overriding the more generic `*.svg`
+from `vite/client` (TS picks the most specific matching wildcard pattern). The
+`vite-plugin-svgr/client` reference was removed from `vite-env.d.ts` — it only declares
+`*.svg?react`, which we don't use. The `?react` suffix isn't used at all (see also item 8 — under
+vitest it caused a different, more serious problem).
 
-Состав иконок сознательно ограничен двумя (`chevron`, `search`) по списку из плана; `Input`-варианты `secure`/
-`search` используют `chevron` (с поворотом на 180°) и `search` — вариант `copy` из брокера не портирован
-(нет подходящей иконки в этом минимальном наборе), задел для расширения оставлен в `ui/icons/types.ts`.
+The icon set is deliberately limited to two (`chevron`, `search`) per the plan's list;
+`Input`'s `secure`/`search` variants use `chevron` (rotated 180°) and `search` — the `copy`
+variant from the broker project wasn't ported (no suitable icon in this minimal set), a spot for
+expansion is left in `ui/icons/types.ts`.
 
-## Фаза 8
+## Phase 8
 
-### 8. `vite-plugin-svgr`'s `?react`-трансформ не применяется внутри пайплайна vitest
+### 8. `vite-plugin-svgr`'s `?react` transform isn't applied inside the vitest pipeline
 
-При первой попытке подключить `vitest.config.ts` с тем же svgr-плагином, что и `vite.config.ts`, но с импортом
-через суффикс `?react` (как в фазе 6 до правки из пункта 7), тест `Icon.test.tsx` падал с
-`InvalidCharacterError: "data:image/svg+xml,...` — импорт резолвился в data-URI строку (дефолтное поведение
-`vite/client` для ассетов), а не в React-компонент, хотя `vite build` тот же файл транслирует корректно.
-Попытка обойти проблему через `resolve.alias`/`test.alias` (regex на `\.svg\?react$` → мок-компонент) тоже не
-сработала — алиас не матчился вообще (та же ошибка "Does the file exist?" от `vite:import-analysis`).
+On the first attempt to wire up `vitest.config.ts` with the same svgr plugin as `vite.config.ts`,
+but importing via the `?react` suffix (as in phase 6 before the fix in item 7), the
+`Icon.test.tsx` test failed with `InvalidCharacterError: "data:image/svg+xml,...` — the import
+resolved to a data-URI string (the default `vite/client` behavior for assets), not a React
+component, even though `vite build` transforms the same file correctly. Trying to work around it
+via `resolve.alias`/`test.alias` (a regex on `\.svg\?react$` → a mock component) also didn't
+work — the alias didn't match at all (the same "Does the file exist?" error from
+`vite:import-analysis`).
 
-**Решение:** проблема ушла сама после фикса из пункта 7 (импорт иконок без суффикса `?react`, через алиас
-`~/ui/icons/svg/*.svg`, полагаясь только на `include: '**/*.svg'` плагина) — в `vitest.config.ts` подключён тот
-же svgr-плагин с идентичной конфигурацией, что и в `vite.config.ts`, и иконки рендерятся в тестах по-настоящему
-(без отдельного SVG-мока — пункт "mock SVG" из плана фазы 8 закрыт трансформом, а не мок-модулем).
+**Solution:** the problem went away on its own after the fix in item 7 (importing icons without
+the `?react` suffix, via the `~/ui/icons/svg/*.svg` alias, relying only on the plugin's
+`include: '**/*.svg'`) — `vitest.config.ts` loads the same svgr plugin with an identical config
+to `vite.config.ts`, and icons render for real in tests (no separate SVG mock — the "mock SVG"
+item from the phase-8 plan is closed by the transform, not a mock module).
 
-### 9. Тест для `schemas/env.ts`, а не `config/env.ts`
+### 9. A test for `schemas/env.ts`, not `config/env.ts`
 
-По прямому указанию (env читается на импорте в `config/env.ts` — единственном файле, которому это разрешает
-`no-restricted-syntax`, и застабить `import.meta.env` под vitest нельзя без порчи изоляции модуля) тест
-покрывает чистую Zod-схему `envSchema` из `schemas/env.ts`. Файл теста лежит по зеркалу `__tests__/schemas/
-env.test.ts` (не `__tests__/config/env.test.ts` из черновой формулировки в плане) — `__tests__/` зеркалит
-`src/`, а тестируемая логика физически лежит в `schemas/`. `config/env.ts` также сознательно вне
-`coverage.include` (только `src/utils`, `src/ui/components`, `src/store`), поэтому это не влияет на пороги.
+Per a direct instruction (env is read on import in `config/env.ts` — the only file allowed to do
+so by `no-restricted-syntax`, and `import.meta.env` can't be stubbed under vitest without
+breaking module isolation), the test covers the pure Zod schema `envSchema` from `schemas/env.ts`.
+The test file is at the mirrored path `__tests__/schemas/env.test.ts` (not
+`__tests__/config/env.test.ts` from the plan's draft wording) — `__tests__/` mirrors `src/`, and
+the tested logic physically lives in `schemas/`. `config/env.ts` is also deliberately outside
+`coverage.include` (only `src/utils`, `src/ui/components`, `src/store`), so this doesn't affect the thresholds.
 
-### 10. Полностью покрытые файлы не показаны в таблице `pnpm test:coverage`
+### 10. Fully-covered files aren't shown in the `pnpm test:coverage` table
 
-`@vitest/coverage-v8` 4.1.10 в текстовом репортере по умолчанию включает `skipFull: true`, когда определяет
-агентское/CI-окружение (комментарий в исходниках vitest: "default to `skipFull` ... when text reporter is used
-on agents") — из итоговой таблицы пропадают строки для файлов с 100% по statements/branches/functions
-(`Skeleton`, `Tooltip`, `ToastMessage`, `Loaders/*`, `zod4Resolver`, `useAuthStore` — все они реально
-инструментированы, что подтверждено через `coverage/coverage-final.json`, где присутствуют все ожидаемые
-файлы). Итоговые проценты и пороги считаются по полному набору независимо от того, что показано в таблице —
-поведение ожидаемое, отдельно фиксируем, чтобы это не читалось как «файлы выпали из покрытия».
+`@vitest/coverage-v8` 4.1.10 enables `skipFull: true` in the default text reporter when it
+detects an agent/CI environment (a comment in vitest's source: "default to `skipFull` ... when
+text reporter is used on agents") — rows for files with 100% statements/branches/functions
+coverage drop out of the final table (`Skeleton`, `Tooltip`, `ToastMessage`, `Loaders/*`,
+`zod4Resolver`, `useAuthStore` — all of them are actually instrumented, confirmed via
+`coverage/coverage-final.json`, where all expected files are present). Final percentages and
+thresholds are computed against the full set regardless of what's shown in the table — this is
+expected behavior, noted separately so it isn't misread as "files dropped out of coverage".
 
-## Фаза 9
+## Phase 9
 
-### 11. `pnpm build-storybook` падает с "Yarn Plug'n'Play manifest forbids importing" — стороннее заражение окружения, не связано с этим репо
+### 11. `pnpm build-storybook` fails with "Yarn Plug'n'Play manifest forbids importing" — third-party environment contamination, unrelated to this repo
 
-`pnpm build-storybook` (esbuild-бандлинг manager-бинарника Storybook) падал с тремя ошибками вида
-`Could not resolve "@storybook/global"` / `"storybook/internal/csf"` / `"storybook/open-service"`,
-с текстом `The Yarn Plug'n'Play manifest forbids importing "..." here because it's not listed as
-a dependency of this package`, хотя проект целиком на pnpm (обычный `node_modules`, никакого Yarn
-нет ни в одной из package.json). Причина — esbuild ищет `.pnp.cjs` вверх по дереву каталогов от
-`resolveDir` независимо от того, использует ли текущий проект Yarn PnP, и если находит файл с этим
-именем в любом каталоге-предке — применяет его как манифест PnP-ограничений ко всем резолвам.
-На машине, где выполнялась эта фаза, обнаружился `/Users/zeddz/.pnp.cjs` — файл, не относящийся ни
-к этому репозиторию, ни к соседним проектам (судя по всему, остаток от несвязанного эксперимента
-с Yarn где-то в `$HOME`); эта директория — предок `react_zd_v1`, поэтому esbuild подхватывал его.
-Известная проблема esbuild, не специфичная для Storybook/pnpm/этого репо:
+`pnpm build-storybook` (esbuild bundling Storybook's manager binary) failed with three errors
+like `Could not resolve "@storybook/global"` / `"storybook/internal/csf"` /
+`"storybook/open-service"`, with the message `The Yarn Plug'n'Play manifest forbids importing "..." here because it's not listed as a dependency of this package`,
+even though the project is entirely on pnpm (a plain `node_modules`, no Yarn in any package.json).
+The cause — esbuild searches for `.pnp.cjs` upward through the directory tree from `resolveDir`
+regardless of whether the current project uses Yarn PnP, and if it finds a file with that name in
+any ancestor directory — it applies it as the PnP restriction manifest for all resolves. On the
+machine where this phase ran, `/Users/zeddz/.pnp.cjs` was found — a file unrelated to this
+repository or to neighboring projects (apparently a leftover from an unrelated Yarn experiment
+somewhere in `$HOME`); that directory is an ancestor of `react_zd_v1`, so esbuild picked it up.
+A known esbuild issue, not specific to Storybook/pnpm/this repo:
 [evanw/esbuild#3338](https://github.com/evanw/esbuild/issues/3338),
-[evanw/esbuild#3876](https://github.com/evanw/esbuild/issues/3876); подтверждённый воркэраунд —
-переименовать/убрать посторонний `.pnp.cjs`.
+[evanw/esbuild#3876](https://github.com/evanw/esbuild/issues/3876); the confirmed workaround is
+to rename/remove the stray `.pnp.cjs`.
 
-**Решение (не трогает код репозитория):** `/Users/zeddz/.pnp.cjs` переименован в
-`/Users/zeddz/.pnp.cjs.disabled-by-react_zd_v1-setup` (не удалён — обратимо, если файл окажется
-нужен какому-то другому проекту на этой машине). После этого `pnpm build-storybook` собирается
-штатно. Это правка окружения конкретной машины, а не проекта — при воспроизведении на другой машине
-(CI, другой ноутбук) специально искать не нужно, если там нет своего стороннего `.pnp.cjs`
-где-то в предках рабочей директории; если аналогичная ошибка повторится — тот же диагноз
-(`find ~ -maxdepth 1 -iname '.pnp.cjs'` от корня рабочей директории вверх).
+**Solution (doesn't touch repo code):** `/Users/zeddz/.pnp.cjs` was renamed to
+`/Users/zeddz/.pnp.cjs.disabled-by-react_zd_v1-setup` (not deleted — reversible, in case another
+project on this machine needs the file). After that, `pnpm build-storybook` builds normally.
+This is a fix to this particular machine's environment, not to the project — when reproducing on
+another machine (CI, another laptop) there's no need to specifically search for this unless it
+has its own stray `.pnp.cjs` somewhere in the ancestors of the working directory; if a similar
+error recurs — same diagnosis (`find ~ -maxdepth 1 -iname '.pnp.cjs'` from the working
+directory's root upward).
 
-### 12. `pnpm <script>` падает с `[ERR_PNPM_IGNORED_BUILDS]` при добавлении новых зависимостей с postinstall-скриптами
+### 12. `pnpm <script>` fails with `[ERR_PNPM_IGNORED_BUILDS]` when new dependencies with postinstall scripts are added
 
-Установка `storybook`/`@storybook/react-vite`/`@storybook/addon-themes` подтянула `esbuild` как
-транзитивную зависимость; `esbuild` имеет postinstall-скрипт, который pnpm по умолчанию не
-выполняет без явного подтверждения — после этого **любой** `pnpm <script>` (не только `install`)
-завершался с exit code 1 и `[ERR_PNPM_IGNORED_BUILDS]`, потому что pnpm перед выполнением скрипта
-синхронно проверяет актуальность `node_modules` и падает, если есть неподтверждённые build-скрипты
-(интерактивный `pnpm approve-builds` в неинтерактивной сессии агента зависал на престоне без ответа).
+Installing `storybook`/`@storybook/react-vite`/`@storybook/addon-themes` pulled in `esbuild` as a
+transitive dependency; `esbuild` has a postinstall script that pnpm doesn't run by default without
+explicit approval — after that, **any** `pnpm <script>` (not just `install`) failed with exit
+code 1 and `[ERR_PNPM_IGNORED_BUILDS]`, because pnpm synchronously checks whether `node_modules`
+is up to date before running a script and fails if there are unapproved build scripts (an
+interactive `pnpm approve-builds` in a non-interactive agent session just hung waiting for input).
 
-**Решение:** `pnpm approve-builds --all` (неинтерактивный флаг, в отличие от голого
-`pnpm approve-builds`) — записывает разрешение в `pnpm-workspace.yaml` (`allowBuilds: { esbuild:
-true, ... }`), которое коммитится в репозиторий, поэтому повторный `pnpm install` на чистой
-машине больше не спросит и не упадёт. См. `README.md` (Troubleshooting) — там же зафиксирован
-воспроизводимый шаг для будущих пакетов с постинсталлами.
+**Solution:** `pnpm approve-builds --all` (a non-interactive flag, unlike bare
+`pnpm approve-builds`) — writes the approval into `pnpm-workspace.yaml` (`allowBuilds: { esbuild: true, ... }`),
+which is committed to the repository, so a subsequent `pnpm install` on a clean machine won't ask
+again or fail. See `README.md` (Troubleshooting) — the same reproducible step is recorded there
+for future packages with postinstalls.

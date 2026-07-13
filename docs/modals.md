@@ -1,10 +1,10 @@
-# Модалки
+# Modals
 
 ## `ModalCore` — parent-owned
 
-Единственный модальный компонент шаблона — `ui/components/ModalCore/ModalCore.tsx`, на
-`radix-ui` `Dialog`. Полностью **parent-owned**: не хранит своё открытое/закрытое состояние —
-родитель передаёт `isOpen`/`setOpen` пропсами:
+The template's only modal component — `ui/components/ModalCore/ModalCore.tsx`, built on
+`radix-ui`'s `Dialog`. Fully **parent-owned**: it doesn't hold its own open/closed state —
+the parent passes `isOpen`/`setOpen` as props:
 
 ```tsx
 const [isModalOpen, setModalOpen] = useState(false);
@@ -19,32 +19,32 @@ const [isModalOpen, setModalOpen] = useState(false);
 />
 ```
 
-`setOpen` передаётся прямо в Radix'ов `onOpenChange`, поэтому автоматически срабатывает и на
-клик по оверлею, и на Escape (фокус-трап и обработка Escape — из Radix, ничего не реализовано
-руками). Пример — `pages/Home/HomePage.tsx`.
+`setOpen` is passed straight into Radix's `onOpenChange`, so it fires automatically on both an
+overlay click and Escape (the focus trap and Escape handling come from Radix, nothing is
+implemented by hand). Example — `pages/Home/HomePage.tsx`.
 
-Пропсы: `isOpen`, `setOpen`, `title?`, `description?`, `confirmAction?`, `cancelAction?`
-(кнопки рендерятся только если действие передано), `loading?` (спиннер на confirm, дизейблит обе
-кнопки), `hasCloseButton?` (по умолчанию `true`), `confirmText?`/`cancelText?` (иначе — переводы
-`common.save`/`common.cancel`), `children?`.
+Props: `isOpen`, `setOpen`, `title?`, `description?`, `confirmAction?`, `cancelAction?`
+(buttons are only rendered if an action is passed), `loading?` (spinner on confirm, disables both
+buttons), `hasCloseButton?` (defaults to `true`), `confirmText?`/`cancelText?` (otherwise —
+the `common.save`/`common.cancel` translations), `children?`.
 
-Модалка без `title` всё равно получает заголовок в дерево доступности — `VisuallyHidden.Root`
-с `t('common.close')` — Radix `Dialog` требует `Dialog.Title` для скринридеров независимо от
-того, нужен ли заголовок визуально.
+A modal without a `title` still gets a title in the accessibility tree — a `VisuallyHidden.Root`
+with `t('common.close')` — Radix's `Dialog` requires a `Dialog.Title` for screen readers
+regardless of whether a title is needed visually.
 
-## Когда переходить на глобальный менеджер
+## When to move to a global manager
 
-Пока в шаблоне одна модалка и один вызывающий компонент — `useState` в родителе — самое простое
-решение. Переходить на глобальный менеджер, когда:
+While the template has one modal and one calling component, `useState` in the parent is the
+simplest solution. Move to a global manager when:
 
-- модалку нужно открывать из нескольких несвязанных мест (не только из компонента, где она
-  отрендерена — например, из перехватчика ошибок API или из другой ветки дерева);
-- нужен стек модалок (модалка над модалкой);
-- нужно открыть модалку императивно за пределами React-дерева (после успешного запроса и т.п.).
+- the modal needs to be opened from several unrelated places (not just from the component
+  that renders it — e.g. from an API error interceptor or another branch of the tree);
+- a modal stack is needed (a modal over a modal);
+- the modal needs to be opened imperatively outside the React tree (after a successful request, etc.).
 
-## Рецепт: `useModalStore` + типизированный реестр + `ModalHost`
+## Recipe: `useModalStore` + a typed registry + `ModalHost`
 
-Не реализовано в шаблоне — добавляется по необходимости.
+Not implemented in the template — add it when needed.
 
 ```ts
 // store/useModalStore.ts
@@ -72,7 +72,7 @@ export const useModalStore = create<ModalStore>((set) => ({
 ```
 
 ```tsx
-// app/ModalHost.tsx — монтируется один раз в App.tsx, рендерит все активные модалки
+// app/ModalHost.tsx — mounted once in App.tsx, renders all active modals
 export function ModalHost() {
   const modals = useModalStore((state) => state.modals);
   return (
@@ -84,6 +84,6 @@ export function ModalHost() {
 }
 ```
 
-Вызов из любого места без пропс-дриллинга: `useModalStore.getState().openModal('confirmDelete', { entityName })`.
-`ModalRegistry` — единственное место, которое нужно расширять при добавлении новой модалки;
-`openModal`/`closeModal` типизированы по нему, опечатка в ключе не пройдёт компиляцию.
+Calling it from anywhere with no prop drilling: `useModalStore.getState().openModal('confirmDelete', { entityName })`.
+`ModalRegistry` is the only place that needs to be extended when adding a new modal;
+`openModal`/`closeModal` are typed against it, so a typo in the key won't compile.

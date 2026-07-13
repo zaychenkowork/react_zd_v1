@@ -1,22 +1,22 @@
-# API-слой
+# API layer
 
-## Модули
+## Modules
 
-| Файл | Роль |
+| File | Role |
 |---|---|
-| `api/client.ts` | Единственный axios instance (`baseURL` из `~/config/config`). Request-интерсептор кладёт `Authorization: Bearer <accessToken>` из `useAuthStore.getState()`. Response-интерсептор нормализует **любую** ошибку в `ApiError` (см. ниже) — выше по стеку (query/mutation `queryFn`) уже нет axios-специфичных ошибок. |
-| `api/fetcher.ts` | `fetcher<T>(promise: Promise<AxiosResponse<T>>): Promise<T>` — разворачивает `AxiosResponse<T>` в `T`, чтобы `api.*` можно было передавать прямо в `queryFn`/`mutationFn`. |
-| `api/api.ts` | Единая точка входа по доменам: `api.auth.*`, `api.user.*`. Каждый метод — тонкая обёртка над `apiClient.get/post/patch/...`, без бизнес-логики. |
-| `api/queryKeys.ts` | Фабрика query-ключей по домену (`userKeys.all`, `userKeys.profile()`), паттерн [tkdodo.eu, «Effective React Query Keys»](https://tkdodo.eu/blog/effective-react-query-keys). |
-| `api/queries/<domain>/use<Name>{Query,Mutation}.ts` | Хуки `useQuery`/`useMutation`, группированные по домену (`api/queries/profile/...`, будущие `api/queries/admin/...`). |
-| `types/api.ts` | DTO запросов/ответов (`type`, не `interface` — см. `docs/conventions.md`) + класс `ApiError`. |
+| `api/client.ts` | The single axios instance (`baseURL` from `~/config/config`). A request interceptor attaches `Authorization: Bearer <accessToken>` from `useAuthStore.getState()`. A response interceptor normalizes **any** error into `ApiError` (see below) — further up the stack (the query/mutation `queryFn`) there are no more axios-specific errors. |
+| `api/fetcher.ts` | `fetcher<T>(promise: Promise<AxiosResponse<T>>): Promise<T>` — unwraps `AxiosResponse<T>` into `T`, so `api.*` can be passed straight into `queryFn`/`mutationFn`. |
+| `api/api.ts` | A single entry point organized by domain: `api.auth.*`, `api.user.*`. Each method is a thin wrapper over `apiClient.get/post/patch/...`, with no business logic. |
+| `api/queryKeys.ts` | A query key factory per domain (`userKeys.all`, `userKeys.profile()`), the pattern from [tkdodo.eu, "Effective React Query Keys"](https://tkdodo.eu/blog/effective-react-query-keys). |
+| `api/queries/<domain>/use<Name>{Query,Mutation}.ts` | `useQuery`/`useMutation` hooks, grouped by domain (`api/queries/profile/...`, future `api/queries/admin/...`). |
+| `types/api.ts` | Request/response DTOs (`type`, not `interface` — see `docs/conventions.md`) + the `ApiError` class. |
 
-Добавление нового эндпоинта: метод в `api/api.ts` → DTO в `types/api.ts` (если ещё нет) → ключ в
-`queryKeys.ts` (если новый домен) → хук в `api/queries/<domain>/`.
+Adding a new endpoint: a method in `api/api.ts` → a DTO in `types/api.ts` (if not already there) → a
+key in `queryKeys.ts` (if it's a new domain) → a hook in `api/queries/<domain>/`.
 
-## Схема ошибок
+## Error shape
 
-Response-интерсептор `api/client.ts` превращает любую ошибку axios в `ApiError`:
+The `api/client.ts` response interceptor turns any axios error into an `ApiError`:
 
 ```ts
 export type ApiErrorParams = {
@@ -27,16 +27,16 @@ export type ApiErrorParams = {
 };
 ```
 
-**Требование к бэку: отдавать `code`** в теле ошибки (`{ code, message, details }`) — именно
-`code`, не `status` и не `message`, маппится на ключ перевода `errors.<code>` (см. ниже). Без
-`code` от бэка ошибка нормализуется в `code: 'UNKNOWN_ERROR'`, и пользователь увидит
-`errors.generic`.
+**Backend requirement: return `code`** in the error body (`{ code, message, details }`) — it's
+specifically `code`, not `status` or `message`, that maps to the translation key `errors.<code>`
+(see below). Without a `code` from the backend, the error is normalized to
+`code: 'UNKNOWN_ERROR'`, and the user sees `errors.generic`.
 
-## Тосты и ошибки — строго opt-in
+## Toasts and errors — strictly opt-in
 
-Никаких тостов по умолчанию. Поведение включается через `meta` на конкретном query/mutation —
-типизация `meta` (`Register` interface из TanStack Query) объявлена в
-`src/types/tanstack-query.d.ts`, а не в провайдере:
+No toasts by default. Behavior is enabled via `meta` on a specific query/mutation — the `meta`
+typing (the `Register` interface from TanStack Query) is declared in
+`src/types/tanstack-query.d.ts`, not in the provider:
 
 ```ts
 declare module '@tanstack/react-query' {
@@ -52,12 +52,12 @@ declare module '@tanstack/react-query' {
 }
 ```
 
-- `meta.errorToast: true` → глобальный `QueryCache`/`MutationCache` (`app/providers/queryClient.ts`)
-  показывает `toast.error(t('errors.' + error.code, { defaultValue: t('errors.generic') }))`.
-- `meta.successToast: '<i18n-ключ>'` → `toast.success(t(key))` при успехе мутации.
-- `meta.invalidates: QueryKey[]` → `invalidateQueries` для каждого ключа при успехе мутации.
+- `meta.errorToast: true` → the global `QueryCache`/`MutationCache` (`app/providers/queryClient.ts`)
+  shows `toast.error(t('errors.' + error.code, { defaultValue: t('errors.generic') }))`.
+- `meta.successToast: '<i18n-key>'` → `toast.success(t(key))` on mutation success.
+- `meta.invalidates: QueryKey[]` → `invalidateQueries` for each key on mutation success.
 
-Пример (`api/queries/profile/useUpdateProfileMutation.ts`):
+Example (`api/queries/profile/useUpdateProfileMutation.ts`):
 
 ```ts
 export function useUpdateProfileMutation() {
@@ -72,22 +72,22 @@ export function useUpdateProfileMutation() {
 }
 ```
 
-Обоснование выбора места (глобальные кэши, а не `onError` на каждом вызове) —
+Rationale for this placement (global caches rather than `onError` on every call) —
 [TanStack Query docs, `MutationCache`](https://tanstack.com/query/latest/docs/reference/MutationCache),
-[tkdodo.eu, «React Query Error Handling»](https://tkdodo.eu/blog/react-query-error-handling).
+[tkdodo.eu, "React Query Error Handling"](https://tkdodo.eu/blog/react-query-error-handling).
 
-`QueryClient` и его кэши — `app/providers/queryClient.ts`; `app/providers/QueryProvider.tsx` —
-только компонент-обёртка (`QueryClientProvider` + `ReactQueryDevtools` за `CONFIG.ENABLE_DEVTOOLS`).
-Настройки по умолчанию (`config/query.ts`): `staleTime` 60s, `gcTime` 5m, `retry` 2 для queries /
-0 для mutations.
+`QueryClient` and its caches — `app/providers/queryClient.ts`; `app/providers/QueryProvider.tsx` —
+just a wrapper component (`QueryClientProvider` + `ReactQueryDevtools` behind `CONFIG.ENABLE_DEVTOOLS`).
+Default settings (`config/query.ts`): `staleTime` 60s, `gcTime` 5m, `retry` 2 for queries /
+0 for mutations.
 
-## Refresh token: готовый рецепт single-flight
+## Refresh token: a ready-made single-flight recipe
 
-Включать этот код в `~/api/client.ts`, как только backend отдаёт рабочий `POST /auth/refresh`
-(`api.auth.refresh` уже объявлен в `~/api/api.ts`) — до этого момента любой 401 просто
-нормализуется в `ApiError` и пробрасывается наверх, как и все остальные статусы. Ключевая идея —
-single-flight: пока идёт один запрос на обновление токена, остальные параллельные 401-запросы
-не бьют `/auth/refresh` повторно, а ждут результата в очереди и переигрываются с новым токеном.
+Wire this code into `~/api/client.ts` as soon as the backend has a working `POST /auth/refresh`
+(`api.auth.refresh` is already declared in `~/api/api.ts`) — until then, any 401 is simply
+normalized into `ApiError` and propagated up, like every other status. The key idea is
+single-flight: while one token-refresh request is in flight, other concurrent 401 requests
+don't hit `/auth/refresh` again — they wait in a queue and get replayed with the new token.
 
 ```ts
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
