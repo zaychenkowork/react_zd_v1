@@ -16,5 +16,37 @@
     "generic": "Something went wrong. Please try again.",
     "UNKNOWN_ERROR": "Something went wrong. Please try again.",
     "NETWORK_ERROR": "Network error — check your connection and try again."
+  },
+  "nav": {
+    "home": "Home",
+    "login": "Log in"
+  },
+  "footer": {
+    "copyright": "© {{year}} react-zd-v1"
+  },
+  "theme": {
+    "toggleLabel": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "uk": "Ukrainian",
+    "ar": "Arabic"
+  },
+  "home": {
+    "title": "react-zd-v1",
+    "subtitle": "A React template — Vite, TanStack Query, Zustand, i18next.",
+    "profileSectionTitle": "Demo block: UserProfileCard"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "This page does not exist.",
+    "backHome": "Back to home"
+  },
+  "profile": {
+    "title": "Profile",
+    "updated": "Profile updated"
   }
 }

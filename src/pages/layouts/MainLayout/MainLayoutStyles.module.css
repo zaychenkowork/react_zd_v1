@@ -1,0 +1,38 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-grey-200);
+}
+
+.logo {
+  font-weight: 600;
+  color: var(--color-primary-950);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--color-grey-200);
+  color: var(--color-grey-600);
+  font-size: 0.875rem;
+}

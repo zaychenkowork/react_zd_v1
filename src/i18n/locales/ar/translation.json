@@ -16,5 +16,37 @@
     "generic": "حدث خطأ ما. حاول مرة أخرى.",
     "UNKNOWN_ERROR": "حدث خطأ ما. حاول مرة أخرى.",
     "NETWORK_ERROR": "خطأ في الشبكة — تحقق من اتصالك وحاول مرة أخرى."
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "login": "تسجيل الدخول"
+  },
+  "footer": {
+    "copyright": "© {{year}} react-zd-v1"
+  },
+  "theme": {
+    "toggleLabel": "تبديل المظهر",
+    "light": "فاتح",
+    "dark": "داكن"
+  },
+  "language": {
+    "label": "اللغة",
+    "en": "الإنجليزية",
+    "uk": "الأوكرانية",
+    "ar": "العربية"
+  },
+  "home": {
+    "title": "react-zd-v1",
+    "subtitle": "قالب React — Vite وTanStack Query وZustand وi18next.",
+    "profileSectionTitle": "كتلة تجريبية: UserProfileCard"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "هذه الصفحة غير موجودة.",
+    "backHome": "العودة إلى الرئيسية"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "updated": "تم تحديث الملف الشخصي"
   }
 }

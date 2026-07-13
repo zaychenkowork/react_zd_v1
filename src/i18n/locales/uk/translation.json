@@ -16,5 +16,37 @@
     "generic": "Щось пішло не так. Спробуйте ще раз.",
     "UNKNOWN_ERROR": "Щось пішло не так. Спробуйте ще раз.",
     "NETWORK_ERROR": "Помилка мережі — перевірте з'єднання і спробуйте ще раз."
+  },
+  "nav": {
+    "home": "Головна",
+    "login": "Увійти"
+  },
+  "footer": {
+    "copyright": "© {{year}} react-zd-v1"
+  },
+  "theme": {
+    "toggleLabel": "Перемкнути тему",
+    "light": "Світла",
+    "dark": "Темна"
+  },
+  "language": {
+    "label": "Мова",
+    "en": "Англійська",
+    "uk": "Українська",
+    "ar": "Арабська"
+  },
+  "home": {
+    "title": "react-zd-v1",
+    "subtitle": "React-шаблон — Vite, TanStack Query, Zustand, i18next.",
+    "profileSectionTitle": "Демо-блок: UserProfileCard"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "Такої сторінки не існує.",
+    "backHome": "На головну"
+  },
+  "profile": {
+    "title": "Профіль",
+    "updated": "Профіль оновлено"
   }
 }
