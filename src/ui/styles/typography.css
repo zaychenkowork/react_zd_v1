@@ -1,0 +1,15 @@
+/**
+ * Intentionally minimal — a full type scale (weights, sizes, line-heights,
+ * font family) lands after setup, from the design tickets. See ui/fonts/
+ * for the pending font files.
+ */
+.text-body {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.text-heading {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
