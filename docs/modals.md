@@ -2,7 +2,7 @@
 
 ## `ModalCore` — parent-owned
 
-The template's only modal component — `ui/components/ModalCore/ModalCore.tsx`, built on
+The template's only modal component — `components/ui/ModalCore/ModalCore.tsx`, built on
 `radix-ui`'s `Dialog`. Fully **parent-owned**: it doesn't hold its own open/closed state —
 the parent passes `isOpen`/`setOpen` as props:
 

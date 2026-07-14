@@ -1,39 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  selectAccessToken,
-  selectIsAuthenticated,
-  useAuthStore,
-} from '~/store/useAuthStore';
+import { selectIsAuthenticated, useAuthStore } from '~/store/useAuthStore';
 
 describe('useAuthStore', () => {
   beforeEach(() => {
-    useAuthStore.getState().clearTokens();
+    useAuthStore.getState().logout();
   });
 
-  it('has no access token and reports as unauthenticated by default', () => {
-    expect(selectAccessToken(useAuthStore.getState())).toBeNull();
+  it('reports as unauthenticated by default', () => {
     expect(selectIsAuthenticated(useAuthStore.getState())).toBe(false);
   });
 
-  it('stores both tokens and reports as authenticated when setTokens is called', () => {
-    useAuthStore
-      .getState()
-      .setTokens({ accessToken: 'access-1', refreshToken: 'refresh-1' });
+  it('reports as authenticated after setAuthenticated(true)', () => {
+    useAuthStore.getState().setAuthenticated(true);
 
-    expect(selectAccessToken(useAuthStore.getState())).toBe('access-1');
-    expect(useAuthStore.getState().refreshToken).toBe('refresh-1');
     expect(selectIsAuthenticated(useAuthStore.getState())).toBe(true);
   });
 
-  it('clears both tokens when clearTokens is called', () => {
-    useAuthStore
-      .getState()
-      .setTokens({ accessToken: 'access-1', refreshToken: 'refresh-1' });
+  it('resets the flag on logout', () => {
+    useAuthStore.getState().setAuthenticated(true);
 
-    useAuthStore.getState().clearTokens();
+    useAuthStore.getState().logout();
 
-    expect(selectAccessToken(useAuthStore.getState())).toBeNull();
-    expect(useAuthStore.getState().refreshToken).toBeNull();
+    expect(selectIsAuthenticated(useAuthStore.getState())).toBe(false);
   });
 });

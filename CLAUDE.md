@@ -21,16 +21,22 @@ pnpm storybook / build-storybook
 ## Layer rules (see docs/architecture.md)
 
 ```
-app → pages → blocks → api → store → ui → { i18n, schemas, utils, types, config, constants }
+app → pages → components → api → store → components/ui → { i18n, schemas, utils, types, config, constants }
 ```
 
-- `ui/` doesn't know about `store`/`api`/`blocks`/`pages`/`app` — props only.
-- `hooks/` may wrap `store`/`i18n`, may not import `api`/`blocks`/`pages`/`app`.
+(`assets/` and `styles/` are static bottom-level folders anyone may import.)
+
+- `components/ui/` is the presentational tier: doesn't know about `store`/`api`/connected
+  components — props only.
+- `components/` (outside `ui/`) — shared connected components + `layouts/`; doesn't import
+  `pages`/`app`.
+- `api/` doesn't import `store`/`pages`/`app`; may import `components/ui` (e.g. `showToast`).
+- `hooks/` may wrap `store`/`i18n`, may not import `api`/`components`/`pages`/`app`.
 - Boundaries are enforced by the linter (`import-x/no-restricted-paths`, `eslint.config.js`), not just by convention.
 - **No barrels (`index.ts` with re-exports) anywhere in `src/` or `stories/`.** Imports go
   by direct path to the file via `~/`. Details and rationale — `docs/conventions.md`.
 - New connected component: needed in one place → `pages/<Page>/components/`; needed in
-  several → `blocks/`.
+  several → `components/`.
 
 ## Versions — don't change without a reason
 
@@ -41,7 +47,7 @@ upgrade — check current peer deps (`npm view <pkg> peerDependencies`), see the
 
 ## Tests and commits
 
-- A test for every file in `src/utils/`, `src/ui/components/`, `src/store/` — mirrored in
+- A test for every file in `src/utils/`, `src/components/ui/`, `src/store/` — mirrored in
   `__tests__/`, see `docs/testing.md`. `pnpm test run`/`pnpm type-check` run on pre-push
   (husky) — don't disable.
 - Commits — conventional commits (`commitlint`, husky `commit-msg`), see `docs/conventions.md`.

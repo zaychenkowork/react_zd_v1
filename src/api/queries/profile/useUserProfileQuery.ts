@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { api } from '~/api/api';
-import { fetcher } from '~/api/fetcher';
-import { userKeys } from '~/api/queryKeys';
+import { profileQueries } from '~/api/queries/profile/profileQueries';
 
 export function useUserProfileQuery() {
-  return useQuery({
-    queryKey: userKeys.profile(),
-    queryFn: () => fetcher(api.user.profile()),
-  });
+  return useQuery(profileQueries.detail());
 }

@@ -6,7 +6,7 @@ Throughout `src/`, types are declared with `type`. `interface` is used only wher
 merging / augmenting an existing type is needed (the one thing `type` can't do):
 
 - `interface Register` in `src/types/tanstack-query.d.ts` — extends TanStack Query types
-  (`queryMeta`, `mutationMeta`, `defaultError`).
+  (`queryMeta`, `mutationMeta`).
 - `interface ImportMetaEnv`/`ImportMeta` in `src/vite-env.d.ts` — Vite type augmentation.
 - `interface CustomTypeOptions` in `src/i18n/i18n.d.ts` — i18next type augmentation.
 
@@ -18,12 +18,12 @@ the other hand, are not inlined in code files — they live in `types/api.ts` (o
 ## Barrels are forbidden
 
 There is no `index.ts` with re-exports anywhere in `src/` (or in `stories/`). All imports are
-direct, through the file, via the `~/` alias: `import { Button } from '~/ui/components/Button/Button'`,
-not `import { Button } from '~/ui/components'`.
+direct, through the file, via the `~/` alias: `import { Button } from '~/components/ui/Button/Button'`,
+not `import { Button } from '~/components/ui'`.
 
 **Rule: a barrel makes sense only at a package boundary** (its own `package.json`, imported by
 package name — an npm library or a monorepo package), **not at a folder boundary**. In the app, a
-folder boundary is e.g. `src/ui/`, `src/api/`: they aren't published and aren't imported from
+folder boundary is e.g. `src/components/`, `src/api/`: they aren't published and aren't imported from
 outside by name, so a barrel there doesn't provide what it exists for (a stable public package
 API) and only adds:
 
@@ -32,7 +32,7 @@ API) and only adds:
 - **a slower dev server/tests** — a known case from Vercel: 11,000 modules instead of
   3,000 with a membrane barrel → 500 without one
   ([marvinh.dev, "Speeding up the JavaScript ecosystem — Barrel Files"](https://marvinh.dev/blog/speeding-up-javascript-ecosystem-part-7/));
-- **easier accidental reverse imports** (a barrel from `ui/` mixes in anything, including
+- **easier accidental reverse imports** (a barrel from `components/ui/` mixes in anything, including
   an accidental import of `store`/`api`) — something `import-x/no-restricted-paths` is meant to catch.
 
 Detailed breakdown — [tkdodo.eu, "Please Stop Using Barrel Files"](https://tkdodo.eu/blog/please-stop-using-barrel-files).
@@ -43,12 +43,12 @@ Infrastructure instead of a barrel:
 
 - **Import order** — `eslint-plugin-simple-import-sort` with groups by layer
   (`eslint.config.js`, `simple-import-sort/imports`): side-effects → `react`/external packages →
-  `~/app` → `~/pages` → `~/blocks` → `~/ui` → `~/api` → `~/store` → `~/hooks` → `~/i18n` →
-  `~/schemas` → `~/utils` → `~/types` → `~/config` → `~/constants` → relative → `.css`.
+  `~/app` → `~/pages` → `~/components` → `~/api` → `~/store` → `~/hooks` → `~/i18n` →
+  `~/schemas` → `~/utils` → `~/types` → `~/config` → `~/constants` → `~/assets` → relative → `.css`.
 - **Layer encapsulation** — `import-x/no-restricted-paths` (zones, see `docs/architecture.md`)
-  and `no-restricted-imports` (bans bare-importing a whole layer, `~/ui` without a path to a
-  file) — the second is precisely a defense against barrels: if a `ui/index.ts` ever appeared,
-  `import ~/ui` still wouldn't pass lint, barrel or not.
+  and `no-restricted-imports` (bans bare-importing a whole layer, `~/components` without a path to a
+  file) — the second is precisely a defense against barrels: if a `components/index.ts` ever appeared,
+  `import ~/components` still wouldn't pass lint, barrel or not.
 
 `import-x/no-restricted-paths` doesn't resolve the `~/*` alias without a separate resolver —
 without the `eslint-import-resolver-typescript` package (configured in `eslint.config.js`,

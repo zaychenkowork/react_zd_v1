@@ -8,7 +8,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   // Mirrors vite.config.ts's svgr setup so icons render for real in tests —
-  // see src/vite-env.d.ts for the matching `~/ui/icons/svg/*.svg` ambient
+  // see src/vite-env.d.ts for the matching `~/assets/icons/*.svg` ambient
   // module declaration.
   plugins: [
     react(),
@@ -32,7 +32,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
     coverage: {
       provider: 'v8',
-      include: ['src/utils/**/*', 'src/ui/components/**/*', 'src/store/**/*'],
+      include: ['src/utils/**/*', 'src/components/ui/**/*', 'src/store/**/*'],
       thresholds: {
         lines: 80,
         statements: 80,

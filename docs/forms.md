@@ -37,7 +37,7 @@ export const loginSchema = z.object({
 
 ## Controlled pattern
 
-`ui/components/Input/ControlledInput.tsx` wraps `ui/components/Input/Input.tsx` (a presentational
+`components/ui/Input/ControlledInput.tsx` wraps `components/ui/Input/Input.tsx` (a presentational
 component with no RHF) in `useController` from RHF and translates the error:
 
 ```ts
@@ -55,11 +55,11 @@ const errorMessage = fieldState.error?.message;
 
 `fieldState.error.message` is a runtime string (a key from the schema), so it can't be statically
 typed as a literal union of translation keys — the same pattern as `showErrorToast` in
-`app/providers/queryClient.ts` (see `docs/api-layer.md`), hence the `as never` before `t(...)`.
+`src/api/queryClient.ts` (see `docs/api-layer.md`), hence the `as never` before `t(...)`.
 
 Usage in a form — `src/utils/zod4Resolver.ts` as the `resolver`, `ControlledInput` for each
-field (example — `__tests__/ui/components/Input/ControlledInput.test.tsx` and
-`stories/ui/components/Input/ControlledInput.stories.tsx`):
+field (example — `__tests__/components/ui/Input/ControlledInput.test.tsx` and
+`stories/components/ui/Input/ControlledInput.stories.tsx`):
 
 ```tsx
 const { control, handleSubmit } = useForm<LoginFormValues>({

@@ -15,7 +15,7 @@ declare const __APP_VERSION__: string;
 // component (exportType: 'default'), so this overrides vite/client's generic
 // `*.svg` -> string declaration for icons specifically (TS picks the more
 // specific ambient module pattern).
-declare module '~/ui/icons/svg/*.svg' {
+declare module '~/assets/icons/*.svg' {
   import type { FC, SVGProps } from 'react';
 
   const Component: FC<SVGProps<SVGSVGElement>>;

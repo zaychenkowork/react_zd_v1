@@ -54,8 +54,7 @@ export default tseslint.config(
             ['^react', '^@?\\w'],
             ['^~/app'],
             ['^~/pages'],
-            ['^~/blocks'],
-            ['^~/ui'],
+            ['^~/components'],
             ['^~/api'],
             ['^~/store'],
             ['^~/hooks'],
@@ -65,6 +64,7 @@ export default tseslint.config(
             ['^~/types'],
             ['^~/config'],
             ['^~/constants'],
+            ['^~/assets'],
             ['^\\.'],
             ['^.+\\.css$'],
           ],
@@ -76,55 +76,57 @@ export default tseslint.config(
         {
           zones: [
             {
-              target: './src/ui/**/*',
-              from: [
-                './src/api/**/*',
-                './src/store/**/*',
-                './src/blocks/**/*',
-                './src/pages/**/*',
-                './src/app/**/*',
-              ],
+              target: './src/components/ui',
+              from: ['./src/api', './src/store', './src/pages', './src/app'],
               message:
-                'ui/ must not know about stores or API — pass data in via props.',
+                'components/ui/ must not know about stores or API — pass data in via props.',
             },
             {
-              target: './src/blocks/**/*',
-              from: ['./src/pages/**/*', './src/app/**/*'],
-              message: 'blocks/ must not import pages/ or app/.',
+              target: './src/components/ui',
+              from: './src/components',
+              except: ['./ui'],
+              message:
+                'components/ui/ must not import connected components — it is the presentational tier.',
             },
             {
-              target: './src/api/**/*',
-              from: [
-                './src/ui/**/*',
-                './src/blocks/**/*',
-                './src/pages/**/*',
-                './src/app/**/*',
-              ],
-              message:
-                'api/ must not import ui/, blocks/, pages/ or app/ (store/ is allowed for the auth token).',
+              target: './src/components',
+              from: ['./src/pages', './src/app'],
+              message: 'components/ must not import pages/ or app/.',
             },
             {
-              target: './src/store/**/*',
-              from: [
-                './src/api/**/*',
-                './src/ui/**/*',
-                './src/blocks/**/*',
-                './src/pages/**/*',
-                './src/app/**/*',
-              ],
+              target: './src/api',
+              from: './src/components',
+              except: ['./ui'],
               message:
-                'store/ is client state only — it must not import api/, ui/, blocks/, pages/ or app/.',
+                'api/ may import components/ui/ (e.g. showToast) but not connected components.',
             },
             {
-              target: './src/hooks/**/*',
+              target: './src/api',
+              from: ['./src/store', './src/pages', './src/app'],
+              message:
+                'api/ must not import store/, pages/ or app/ — the client is auth-agnostic; see the recipes in docs/api-layer.md.',
+            },
+            {
+              target: './src/store',
               from: [
-                './src/api/**/*',
-                './src/blocks/**/*',
-                './src/pages/**/*',
-                './src/app/**/*',
+                './src/api',
+                './src/components',
+                './src/pages',
+                './src/app',
               ],
               message:
-                'hooks/ may wrap store/i18n but must not import api/ (query hooks live in api/queries), blocks/, pages/ or app/.',
+                'store/ is client state only — it must not import api/, components/, pages/ or app/.',
+            },
+            {
+              target: './src/hooks',
+              from: [
+                './src/api',
+                './src/components',
+                './src/pages',
+                './src/app',
+              ],
+              message:
+                'hooks/ may wrap store/i18n but must not import api/ (query hooks live in api/queries), components/, pages/ or app/.',
             },
           ],
         },
@@ -135,8 +137,7 @@ export default tseslint.config(
           paths: [
             restrictedLayerImport('~/app'),
             restrictedLayerImport('~/pages'),
-            restrictedLayerImport('~/blocks'),
-            restrictedLayerImport('~/ui'),
+            restrictedLayerImport('~/components'),
             restrictedLayerImport('~/api'),
             restrictedLayerImport('~/store'),
             restrictedLayerImport('~/hooks'),
@@ -146,6 +147,8 @@ export default tseslint.config(
             restrictedLayerImport('~/types'),
             restrictedLayerImport('~/config'),
             restrictedLayerImport('~/constants'),
+            restrictedLayerImport('~/assets'),
+            restrictedLayerImport('~/styles'),
           ],
         },
       ],

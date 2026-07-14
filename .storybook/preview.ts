@@ -3,9 +3,9 @@ import '~/i18n/index';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
 import type { Preview } from '@storybook/react-vite';
 
-import '~/ui/styles/tokens.css';
-import '~/ui/styles/base.css';
-import '~/ui/styles/typography.css';
+import '~/styles/tokens.css';
+import '~/styles/base.css';
+import '~/styles/typography.css';
 
 const preview: Preview = {
   parameters: {

@@ -2,7 +2,7 @@
 
 ## Tokens
 
-`src/ui/styles/tokens.css` — CSS custom properties on `:root`, scale-based, not semantic names
+`src/styles/tokens.css` — CSS custom properties on `:root`, scale-based, not semantic names
 (`--color-grey-500`, not `--color-text-secondary`) — the palette came straight from the design as-is.
 Scales:
 
@@ -42,8 +42,8 @@ changes to component CSS modules, only flipping the attribute on `<html>`.
 - on toggling — `setTheme`/`toggleTheme` from the store, wrapped by `hooks/useTheme.ts` (a thin
   wrapper with no business logic — the store itself holds that).
 
-`ThemeSwitcher` (`pages/layouts/MainLayout/components/ThemeSwitcher/`) is the sole
-consumer of `useTheme` today; for why it isn't in `ui/`, see `docs/architecture.md`.
+`ThemeSwitcher` (`components/layouts/MainLayout/components/ThemeSwitcher/`) is the sole
+consumer of `useTheme` today; for why it isn't in `components/ui/`, see `docs/architecture.md`.
 
 RTL is set separately, from i18n (`document.documentElement.dir`), not from the theme — see
 `docs/i18n.md`.
@@ -59,15 +59,15 @@ RTL is set separately, from i18n (`document.documentElement.dir`), not from the 
 
 `vite.config.ts`, `svgr({ svgrOptions: { replaceAttrValues: { '#0B0B0C': 'currentColor' } } })` —
 the SVGR transform replaces the fixed fill/stroke color in the source SVG (`#0B0B0C`, black —
-the color icons are usually exported in from Figma) with `currentColor`, so `ui/icons/Icon.tsx`
+the color icons are usually exported in from Figma) with `currentColor`, so `components/ui/Icon/Icon.tsx`
 can control the icon's color via CSS (`stroke`/`color`) — including via theme tokens — without
-touching the SVG file itself. A new icon added to `ui/icons/svg/` must use the same source
+touching the SVG file itself. A new icon added to `assets/icons/` must use the same source
 color `#0B0B0C`, otherwise the transform won't pick it up.
 
-Icons are imported via the alias (`~/ui/icons/svg/chevron.svg`), not a relative path: typing for
+Icons are imported via the alias (`~/assets/icons/chevron.svg`), not a relative path: typing for
 `.svg` imports is ambiguous (the base `vite/client` types declare a generic `*.svg` → `string`,
 while the SVGR transform turns **all** `**/*.svg` into a component regardless of whether the
-`?react` suffix is present). A targeted augmentation, `declare module '~/ui/icons/svg/*.svg'` in
+`?react` suffix is present). A targeted augmentation, `declare module '~/assets/icons/*.svg'` in
 `src/vite-env.d.ts`, overrides the generic `*.svg` pattern for exactly this path (TS picks the
 most specific matching wildcard), typing the import as `FC<SVGProps<SVGSVGElement>>` without
 relying on `vite-plugin-svgr/client` types (which only describe the `?react` suffix, which this
@@ -75,6 +75,6 @@ template doesn't use — see `docs/testing.md` for why `?react` doesn't work und
 
 ## Typography and fonts — deliberately minimal
 
-`ui/styles/typography.css` contains only `.text-body`/`.text-heading` — a full scale
-(weights, sizes, line-height) and font files in `ui/fonts/` will be added per design-ticket work
+`styles/typography.css` contains only `.text-body`/`.text-heading` — a full scale
+(weights, sizes, line-height) and font files in `assets/fonts/` will be added per design-ticket work
 after setup, and aren't part of the template's scope.

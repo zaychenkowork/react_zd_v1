@@ -4,8 +4,8 @@ Stack: `vitest` + `@testing-library/react` + `jsdom`.
 
 ## `__tests__/` mirrors `src/`
 
-The test for `src/ui/components/Button/Button.tsx` lives at
-`__tests__/ui/components/Button/Button.test.tsx` — the same path as the file in `src/`, only with
+The test for `src/components/ui/Button/Button.tsx` lives at
+`__tests__/components/ui/Button/Button.test.tsx` — the same path as the file in `src/`, only with
 `__tests__/` as the root instead of `src/`. Plus two service subdirectories with no counterpart in `src/`:
 
 - `__tests__/setup/setupTests.ts` — `setupFiles` for vitest.
@@ -16,7 +16,7 @@ same principle.
 
 ## What we must cover
 
-`vitest.config.ts`, `coverage.include`: `src/utils/**`, `src/ui/components/**`, `src/store/**`.
+`vitest.config.ts`, `coverage.include`: `src/utils/**`, `src/components/ui/**`, `src/store/**`.
 Thresholds (`coverage.thresholds`): lines/statements 80, branches 75, functions 70. This isn't
 "cover everything" — it's specifically pure utilities, presentational UI building blocks, and
 client-state stores, i.e. code with no network side effects that can be tested quickly and
@@ -25,7 +25,7 @@ deterministically. `config/env.ts` is deliberately outside `coverage.include` �
 instead the pure Zod schema `schemas/env.ts` is tested (`__tests__/schemas/env.test.ts`), which
 holds all the testable logic.
 
-The remaining layers (`api/queries/*`, `blocks/*`, `pages/*`) aren't covered by tests in the
+The remaining layers (`api/queries/*`, connected components in `components/*`, `pages/*`) aren't covered by tests in the
 template — these are integration/network scenarios, and the testing approach for them is up to
 the specific team's future work.
 
@@ -34,7 +34,7 @@ the specific team's future work.
 - Test name is "what + when + expected": `'shows the translated validation error under each field
   when submitting an empty form'`, not `'test 1'`/`'renders correctly'`.
 - Queries — `screen.getByRole`/`getByText`/`getByPlaceholderText` etc., **not** `data-testid`.
-  `data-testid="icon-svg"` in `ui/icons/Icon.tsx` is the one exception (SVG icons have no
+  `data-testid="icon-svg"` in `components/ui/Icon/Icon.tsx` is the one exception (SVG icons have no
   suitable role/text to query by).
 
 ## `renderWithProviders`
@@ -48,7 +48,7 @@ the default `i18next` instance is initialized as a side effect of importing `~/i
 
 `vite.config.ts` transforms **any** `**/*.svg` import into a React component via
 `vite-plugin-svgr` (`exportType: 'default'`, no `?react` suffix — see `docs/theming.md`/
-`src/ui/icons/types.ts`). The suffix-based `?react` import (`import Chevron from './chevron.svg?react'`),
+`src/components/ui/Icon/types.ts`). The suffix-based `?react` import (`import Chevron from './chevron.svg?react'`),
 common in `vite-plugin-svgr` examples, **doesn't work under vitest**: an import with that suffix
 resolves to a data-URI string (the default `vite/client` behavior for assets), not a component,
 even though the same file transforms correctly under `vite build` — the suffix itself doesn't
@@ -56,7 +56,7 @@ trigger the plugin's transform under vitest. A workaround via `resolve.alias`/`t
 (a regex on `\.svg\?react$`) didn't work either — the alias didn't match at all.
 
 **Solution used in the template:** icons are imported without a suffix
-(`~/ui/icons/svg/chevron.svg`, not `chevron.svg?react`), and `vitest.config.ts` loads the **same**
+(`~/assets/icons/chevron.svg`, not `chevron.svg?react`), and `vitest.config.ts` loads the **same**
 `vite-plugin-svgr` with an identical config to `vite.config.ts` (`include: '**/*.svg'`). Then
 the transform applies the same way in dev/build and in vitest — icons render for real in tests,
 with no separate SVG mock. When adding a new Vite-based config (Storybook —

@@ -10,7 +10,7 @@ const config: StorybookConfig = {
     options: {},
   },
   // The react-vite framework doesn't read the project's vite.config.ts, so the
-  // svgr plugin (icons as components, see src/ui/icons/types.ts) has to be
+  // svgr plugin (icons as components, see src/components/ui/Icon/types.ts) has to be
   // re-added here too — same fix as vitest.config.ts (see docs/testing.md).
   async viteFinal(viteConfig) {
     // Vite's native resolve.tsconfigPaths doesn't apply to importers inside

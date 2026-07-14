@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { queryClient } from '~/app/providers/queryClient';
+import { queryClient } from '~/api/queryClient';
 
 import { CONFIG } from '~/config/config';
 

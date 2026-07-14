@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Route, Routes } from 'react-router';
 
-import { MainLayout } from '~/pages/layouts/MainLayout/MainLayout';
+import { MainLayout } from '~/components/layouts/MainLayout/MainLayout';
 
 import { ROUTES } from '~/config/routes';
 

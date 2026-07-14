@@ -62,11 +62,11 @@ the system's `pnpm`/`node` versions diverge.
 
 ```
 src/
-├── app/        main.tsx, App.tsx, router.tsx, providers/
-├── pages/      pages + layouts/
-├── blocks/     reusable blocks with business logic (= widgets from FSD)
-├── ui/         components/ (no business logic), icons/, styles/, fonts/
-├── api/        client.ts, api.ts, fetcher.ts, queryKeys.ts, queries/<domain>/
+├── main.tsx    entry point
+├── app/        App.tsx, router.tsx, providers/
+├── pages/      pages (+ page-local components/)
+├── components/ shared connected components, layouts/, ui/ (no business logic)
+├── api/        client.ts, api.ts, fetcher.ts, queryClient.ts, queries/<domain>/
 ├── store/      zustand
 ├── hooks/      wrappers over store/i18n
 ├── i18n/       en/uk/ar + RTL
@@ -74,7 +74,9 @@ src/
 ├── config/     env.ts, config.ts, routes.ts, query.ts
 ├── constants/
 ├── types/
-└── utils/
+├── utils/
+├── assets/     icons/ (SVG), fonts/
+└── styles/     tokens.css, base.css, typography.css, toast.css
 __tests__/      mirrors src/
 stories/        mirrors src/ (Storybook)
 docs/           architecture, conventions, API layer, forms, theming, i18n, modals, tests
@@ -93,8 +95,8 @@ Details — `docs/architecture.md` (layers, import direction, "where to put new 
 ## Tests and Storybook
 
 `pnpm test run` — 46+ tests in `__tests__/` (mirrors `src/`), coverage is required for
-`src/utils/**`, `src/ui/components/**`, `src/store/**` (thresholds — `docs/testing.md`).
-`pnpm storybook` — a story for every component in `ui/components/**` + `ui/icons/Icon`, with
+`src/utils/**`, `src/components/ui/**`, `src/store/**` (thresholds — `docs/testing.md`).
+`pnpm storybook` — a story for every component in `components/ui/**` (including `Icon`), with
 a theme switcher (`data-theme`) in the toolbar.
 
 ## Troubleshooting
