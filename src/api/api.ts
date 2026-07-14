@@ -4,8 +4,8 @@ import type {
   LoginRequest,
   LoginResponse,
   UpdateProfileRequest,
-  UserProfile,
 } from '~/types/api';
+import type { UserProfile } from '~/types/types';
 
 /**
  * Single flat entry point for HTTP endpoints. Methods are named

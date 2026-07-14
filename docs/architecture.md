@@ -88,13 +88,13 @@ a candidate for `components/ui/`, regardless of how many places use it.
 
 ### Live example: ThemeSwitcher and LanguageSwitcher
 
-`src/components/layouts/MainLayout/components/ThemeSwitcher/` and `.../LanguageSwitcher/`
-are not in `components/ui/`, but live locally in the layout. Both read the store
-(`useThemeStore` via `useTheme`) or i18n (`useLanguage`) and call their setters directly —
-meaning they **know about stores**, and therefore by definition can't be in `components/ui/`
-(per the rule "`components/ui` doesn't know about stores and the API"). They're used only
-inside `MainLayout`, so they aren't promoted — as soon as a second layout/page needs them,
-that's the signal to promote them to `components/`.
+`src/components/ThemeSwitcher/` and `src/components/LanguageSwitcher/` are shared connected
+components. Both read the store (`useThemeStore` via `useTheme`) or i18n (`useLanguage`) and
+call their setters directly — meaning they **know about stores**, and therefore by definition
+can't be in `components/ui/` (per the rule "`components/ui` doesn't know about stores and
+the API"). Today only `MainLayout` renders them, but the template ships them as shared on
+purpose: any future layout or settings page will want the same switchers, so they're the
+canonical `components/<Name>/` example rather than a layout-local one.
 
 ## Routing and layouts
 
@@ -113,8 +113,8 @@ arrive together with the protected pages).
 | Page | `pages/<Page>/` | `pages/Home/HomePage.tsx` |
 | Part of a page, needed only there | `pages/<Page>/components/` | — |
 | Layout | `components/layouts/<Layout>/` | `components/layouts/MainLayout/` |
-| Connected layout component (knows store/i18n) | `components/layouts/<Layout>/components/` | `ThemeSwitcher/` |
-| Shared connected component (store/api, reused) | `components/<Name>/` | `components/ProtectedRoute/` |
+| Connected layout component (knows store/i18n), single layout | `components/layouts/<Layout>/components/` | — |
+| Shared connected component (store/api/i18n, reused) | `components/<Name>/` | `components/ThemeSwitcher/`, `components/ProtectedRoute/` |
 | UI building block without store/api | `components/ui/<Name>/` | `components/ui/Button/` |
 | Icon | `assets/icons/*.svg` + entry in `components/ui/Icon/types.ts` | `assets/icons/chevron.svg` |
 | HTTP endpoint | `api/api.ts` (flat `<subject><HttpVerb>` method) | `api.profileGet` |

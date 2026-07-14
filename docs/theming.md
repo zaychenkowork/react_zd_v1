@@ -42,7 +42,7 @@ changes to component CSS modules, only flipping the attribute on `<html>`.
 - on toggling — `setTheme`/`toggleTheme` from the store, wrapped by `hooks/useTheme.ts` (a thin
   wrapper with no business logic — the store itself holds that).
 
-`ThemeSwitcher` (`components/layouts/MainLayout/components/ThemeSwitcher/`) is the sole
+`ThemeSwitcher` (`components/ThemeSwitcher/`) is the sole
 consumer of `useTheme` today; for why it isn't in `components/ui/`, see `docs/architecture.md`.
 
 RTL is set separately, from i18n (`document.documentElement.dir`), not from the theme — see

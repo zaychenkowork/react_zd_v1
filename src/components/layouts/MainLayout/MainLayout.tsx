@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet } from 'react-router';
 
-import { LanguageSwitcher } from '~/components/layouts/MainLayout/components/LanguageSwitcher/LanguageSwitcher';
-import { ThemeSwitcher } from '~/components/layouts/MainLayout/components/ThemeSwitcher/ThemeSwitcher';
+import { LanguageSwitcher } from '~/components/LanguageSwitcher/LanguageSwitcher';
+import { ThemeSwitcher } from '~/components/ThemeSwitcher/ThemeSwitcher';
 
 import { selectIsAuthenticated, useAuthStore } from '~/store/useAuthStore';
 

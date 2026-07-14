@@ -2,7 +2,7 @@
  * Cross-domain helper types shared by DTOs and app code.
  */
 
-import { EUserRole } from './enums';
+import type { EUserRole } from '~/types/enums';
 
 /** Fields every persisted backend entity is expected to carry. */
 export type WithBaseEntityFields = {
