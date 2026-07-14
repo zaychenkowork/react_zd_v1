@@ -34,12 +34,7 @@
   },
   "home": {
     "title": "react-zd-v1",
-    "subtitle": "React-шаблон — Vite, TanStack Query, Zustand, i18next.",
-    "profileSectionTitle": "Демо-блок: UserProfileCard",
-    "openModalSectionTitle": "Демо: ModalCore",
-    "openModal": "Відкрити модалку",
-    "demoModalTitle": "Приклад модалки",
-    "demoModalDescription": "Цією модалкою керує батьківський компонент — стан isOpen зберігається на Home і передається пропсами."
+    "subtitle": "React-шаблон — Vite, TanStack Query, Zustand, i18next."
   },
   "notFound": {
     "title": "404",
@@ -47,7 +42,6 @@
     "backHome": "На головну"
   },
   "profile": {
-    "title": "Профіль",
     "updated": "Профіль оновлено"
   }
 }

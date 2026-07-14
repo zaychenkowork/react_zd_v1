@@ -12,8 +12,8 @@ const [isModalOpen, setModalOpen] = useState(false);
 <ModalCore
   isOpen={isModalOpen}
   setOpen={setModalOpen}
-  title={t('home.demoModalTitle')}
-  description={t('home.demoModalDescription')}
+  title={t('someModal.title')}
+  description={t('someModal.description')}
   confirmAction={() => setModalOpen(false)}
   cancelAction={() => setModalOpen(false)}
 />
@@ -21,7 +21,7 @@ const [isModalOpen, setModalOpen] = useState(false);
 
 `setOpen` is passed straight into Radix's `onOpenChange`, so it fires automatically on both an
 overlay click and Escape (the focus trap and Escape handling come from Radix, nothing is
-implemented by hand). Example — `pages/Home/HomePage.tsx`.
+implemented by hand).
 
 Props: `isOpen`, `setOpen`, `title?`, `description?`, `confirmAction?`, `cancelAction?`
 (buttons are only rendered if an action is passed), `loading?` (spinner on confirm, disables both

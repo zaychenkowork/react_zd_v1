@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import { fileURLToPath } from 'node:url';
 import svgr from 'vite-plugin-svgr';
 
 const config: StorybookConfig = {
@@ -10,8 +11,18 @@ const config: StorybookConfig = {
   },
   // The react-vite framework doesn't read the project's vite.config.ts, so the
   // svgr plugin (icons as components, see src/ui/icons/types.ts) has to be
-  // re-added here too — same fix as vitest.config.ts (SETUP_NOTES phase 8).
+  // re-added here too — same fix as vitest.config.ts (see docs/testing.md).
   async viteFinal(viteConfig) {
+    // Vite's native resolve.tsconfigPaths doesn't apply to importers inside
+    // this dot-directory (.storybook/preview.ts), so the `~` alias from
+    // tsconfig.app.json is declared explicitly here.
+    viteConfig.resolve = {
+      ...viteConfig.resolve,
+      alias: {
+        ...viteConfig.resolve?.alias,
+        '~': fileURLToPath(new URL('../src', import.meta.url)),
+      },
+    };
     viteConfig.plugins ??= [];
     viteConfig.plugins.push(
       svgr({

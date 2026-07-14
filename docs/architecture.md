@@ -60,9 +60,10 @@ logic at all). This is the same layer as `widgets` in
 self-sufficient UI blocks that represent a complete interface fragment and
 use other layers (primarily `api`) to fetch data."
 
-Example in this repo — `src/blocks/UserProfileCard/UserProfileCard.tsx`: calls
-`useUserProfileQuery` (the `api` layer) and is composed from `ui/components/Skeleton`. Rendered on
-`pages/Home/HomePage.tsx`.
+Example shape: a `blocks/UserProfileCard/` that calls `useUserProfileQuery` (the `api` layer)
+and is composed from `ui/` components — connected to data by itself, reusable across pages.
+The layer is empty until the first reusable connected component appears (see the promotion
+rule below).
 
 ## Promotion rule
 
@@ -102,7 +103,7 @@ the protected pages).
 | Part of a page, needed only there | `pages/<Page>/components/` | — |
 | Layout | `pages/layouts/<Layout>/` | `pages/layouts/MainLayout/` |
 | Connected layout component (knows store/i18n) | `pages/layouts/<Layout>/components/` | `ThemeSwitcher/` |
-| Reusable block with business logic (data from api) | `blocks/<Block>/` | `blocks/UserProfileCard/` |
+| Reusable block with business logic (data from api) | `blocks/<Block>/` | — |
 | UI building block without store/api | `ui/components/<Name>/` | `ui/components/Button/` |
 | Icon | `ui/icons/svg/*.svg` + entry in `ui/icons/types.ts` | `ui/icons/svg/chevron.svg` |
 | HTTP endpoint | `api/api.ts` (method in the right domain) | `api.user.profile` |

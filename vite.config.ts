@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -10,9 +9,12 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
+  resolve: {
+    // Native tsconfig `paths` resolution (Vite 8) — replaces vite-tsconfig-paths.
+    tsconfigPaths: true,
+  },
   plugins: [
     react(),
-    tsconfigPaths(),
     svgr({
       // svgr options: https://react-svgr.com/docs/options/
       svgrOptions: {
